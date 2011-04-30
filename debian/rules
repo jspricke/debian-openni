@@ -1,0 +1,46 @@
+#!/usr/bin/make -f
+
+PACKAGE = openni
+prefix = /usr
+bindir = $(prefix)/bin
+libdir = $(prefix)/lib
+includedir = $(prefix)/include
+docdir = $(prefix)/share/doc
+
+%:
+	dh --with quilt $@ --buildsystem=makefile
+
+override_dh_auto_build:
+	cd Platform/Linux-x86/CreateRedist && ./RedistMaker
+
+override_dh_auto_install:
+	install -d $(CURDIR)/debian/$(PACKAGE)/$(bindir)
+	install -p $(CURDIR)/Platform/Linux-x86/Bin/Release/niLicense \
+		$(CURDIR)/Platform/Linux-x86/Bin/Release/niReg \
+		$(CURDIR)/debian/$(PACKAGE)/$(bindir)
+	install -d $(CURDIR)/debian/$(PACKAGE)/$(libdir)
+	install -p $(CURDIR)/Platform/Linux-x86/Bin/Release/libnimMockNodes.so \
+		$(CURDIR)/Platform/Linux-x86/Bin/Release/libnimCodecs.so \
+		$(CURDIR)/Platform/Linux-x86/Bin/Release/libnimRecorder.so \
+		$(CURDIR)/Platform/Linux-x86/Bin/Release/libOpenNI.so \
+		$(CURDIR)/debian/$(PACKAGE)/$(libdir)
+	install -d $(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni
+	install -p $(CURDIR)/Platform/Linux-x86/Redist/Include/*.h \
+		$(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni
+	install -d $(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-Arm
+	install -p $(CURDIR)/Platform/Linux-x86/Redist/Include/Linux-Arm/*.h \
+		$(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-Arm
+	install -d $(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-x86
+	install -p $(CURDIR)/Platform/Linux-x86/Redist/Include/Linux-x86/*.h \
+		$(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-x86
+	install -d $(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/html
+	install -p $(CURDIR)/Documentation/OpenNI_UserGuide.pdf \
+		$(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/
+	install -p $(CURDIR)/Source/DoxyGen/html/*.* \
+		$(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/html
+
+
+override_dh_auto_clean:
+	dh_auto_clean
+	rm -rf -- $(CURDIR)/Platform/Linux-x86/CreateRedist/Final
+	rm -rf -- $(CURDIR)/Platform/Linux-x86/CreateRedist/Output

@@ -1,0 +1,20 @@
+Source: openni
+Priority: optional
+Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
+Uploaders: Hans-Christoph Steiner <hans@eds.org>
+Build-Depends: debhelper (>= 7.0.50~),
+               libusb-1.0-0-dev,
+               bzip2,
+               doxygen,
+               tar
+Standards-Version: 3.9.1
+Homepage: http://www.openni.org
+
+Package: openni
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libusb-1.0-0
+Description: library to support 'Natural Interaction' for Kinect cameras
+ OpenNI is a framework for getting data to support 'Natural Interaction',
+ i.e. skeleton tracking.

@@ -4,9 +4,8 @@ Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alio
 Uploaders: Hans-Christoph Steiner <hans@eds.org>
 Build-Depends: debhelper (>= 7.0.50~),
                libusb-1.0-0-dev,
-               bzip2,
                doxygen,
-               tar
+               graphviz
 Standards-Version: 3.9.1
 Homepage: http://www.openni.org
 

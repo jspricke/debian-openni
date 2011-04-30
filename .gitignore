@@ -1,0 +1,10 @@
+Source/DoxyGen/html
+#Platform/Linux-x86/Bin/Release
+Platform/Linux-x86/Build
+Platform/Linux-x86/Redist
+Platform/Linux-x86/CreateRedist/Final
+Platform/Linux-x86/CreateRedist/Output
+debian/openni.debhelper.log
+debian/files
+debian/openni
+debian/openni.substvars

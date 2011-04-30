@@ -38,7 +38,8 @@ override_dh_auto_install:
 		$(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/
 	install -p $(CURDIR)/Source/DoxyGen/html/*.* \
 		$(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/html
-
+	install -d $(CURDIR)/debian/$(PACKAGE)/var/lib/ni
+	install -d $(CURDIR)/debian/$(PACKAGE)/etc/primesense
 
 override_dh_auto_clean:
 	dh_auto_clean

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+/usr/bin/niLicense -r PrimeSense 0KOIk2JeIBYClPWVnMoRKn5cdY4=
+/usr/bin/niReg -r -v /usr/lib/libnimMockNodes.so /etc/primesense
+/usr/bin/niReg -r -v /usr/lib/libnimCodecs.so /etc/primesense
+/usr/bin/niReg -r -v /usr/lib/libnimRecorder.so /etc/primesense

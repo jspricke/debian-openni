@@ -1,6 +1,10 @@
 #!/usr/bin/make -f
 
-PACKAGE = openni
+DEST = $(CURDIR)/debian/tmp
+COMPILED_BASE = $(CURDIR)/Platform/Linux-x86/
+COMPILED_BIN = $(COMPILED_BASE)/Bin/Release
+COMPILED_LIB = $(COMPILED_BASE)/Redist/Include
+
 prefix = /usr
 bindir = $(prefix)/bin
 libdir = $(prefix)/lib
@@ -11,37 +15,40 @@ docdir = $(prefix)/share/doc
 	dh --with quilt $@ --buildsystem=makefile
 
 override_dh_auto_build:
-	cd Platform/Linux-x86/CreateRedist && ./RedistMaker
+	cd Platform/Linux-x86/CreateRedist && LDFLAGS=-lGL ./RedistMaker
 
 override_dh_auto_install:
-	install -d $(CURDIR)/debian/$(PACKAGE)/$(bindir)
-	install -p $(CURDIR)/Platform/Linux-x86/Bin/Release/niLicense \
-		$(CURDIR)/Platform/Linux-x86/Bin/Release/niReg \
-		$(CURDIR)/debian/$(PACKAGE)/$(bindir)
-	install -d $(CURDIR)/debian/$(PACKAGE)/$(libdir)
-	install -p $(CURDIR)/Platform/Linux-x86/Bin/Release/libnimMockNodes.so \
-		$(CURDIR)/Platform/Linux-x86/Bin/Release/libnimCodecs.so \
-		$(CURDIR)/Platform/Linux-x86/Bin/Release/libnimRecorder.so \
-		$(CURDIR)/Platform/Linux-x86/Bin/Release/libOpenNI.so \
-		$(CURDIR)/debian/$(PACKAGE)/$(libdir)
-	install -d $(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni
-	install -p $(CURDIR)/Platform/Linux-x86/Redist/Include/*.h \
-		$(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni
-	install -d $(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-Arm
-	install -p $(CURDIR)/Platform/Linux-x86/Redist/Include/Linux-Arm/*.h \
-		$(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-Arm
-	install -d $(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-x86
-	install -p $(CURDIR)/Platform/Linux-x86/Redist/Include/Linux-x86/*.h \
-		$(CURDIR)/debian/$(PACKAGE)/$(includedir)/ni/Linux-x86
-	install -d $(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/html
+	install -d $(DEST)/$(bindir)
+	install -p $(COMPILED_BIN)/niLicense \
+		$(COMPILED_BIN)/niReg \
+		$(DEST)/$(bindir)
+	install -d $(DEST)/$(libdir)
+	install -p $(COMPILED_BIN)/libnimMockNodes.so \
+		$(COMPILED_BIN)/libnimCodecs.so \
+		$(COMPILED_BIN)/libnimRecorder.so \
+		$(COMPILED_BIN)/libOpenNI.so \
+		$(DEST)/$(libdir)
+	install -d $(DEST)/$(includedir)/ni
+	install -p $(COMPILED_LIB)/*.h \
+		$(DEST)/$(includedir)/ni
+	# Makefiles needed by (at least) PrimeSense Sensor
+	install -p $(COMPILED_LIB)/*Makefile \
+		$(DEST)/$(includedir)/ni
+	install -d $(DEST)/$(includedir)/ni/Linux-Arm
+	install -p $(COMPILED_LIB)/Linux-Arm/*.h \
+		$(DEST)/$(includedir)/ni/Linux-Arm
+	install -d $(DEST)/$(includedir)/ni/Linux-x86
+	install -p $(COMPILED_LIB)/Linux-x86/*.h \
+		$(DEST)/$(includedir)/ni/Linux-x86
+	install -d $(DEST)/$(docdir)/$(PACKAGE)/html
 	install -p $(CURDIR)/Documentation/OpenNI_UserGuide.pdf \
-		$(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/
+		$(DEST)/$(docdir)/$(PACKAGE)/
 	install -p $(CURDIR)/Source/DoxyGen/html/*.* \
-		$(CURDIR)/debian/$(PACKAGE)/$(docdir)/$(PACKAGE)/html
-	install -d $(CURDIR)/debian/$(PACKAGE)/var/lib/ni
-	install -d $(CURDIR)/debian/$(PACKAGE)/etc/primesense
+		$(DEST)/$(docdir)/$(PACKAGE)/html
+	install -d $(DEST)/var/lib/ni
+	install -d $(DEST)/etc/primesense
 
 override_dh_auto_clean:
 	dh_auto_clean
-	rm -rf -- $(CURDIR)/Platform/Linux-x86/CreateRedist/Final
-	rm -rf -- $(CURDIR)/Platform/Linux-x86/CreateRedist/Output
+	rm -rf -- $(COMPILED_BASE)/CreateRedist/Final
+	rm -rf -- $(COMPILED_BASE)/CreateRedist/Output

@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+if [ "$1" = "configure" ]; then
+	niLicense -r PrimeSense 0KOIk2JeIBYClPWVnMoRKn5cdY4=
+	niReg -r /usr/lib/libnimMockNodes.so /etc/primesense
+	niReg -r /usr/lib/libnimCodecs.so /etc/primesense
+	niReg -r /usr/lib/libnimRecorder.so /etc/primesense
+fi
+
+#DEBHELPER#

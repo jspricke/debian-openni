@@ -1,10 +1,16 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?rev=135
-Name: openni
+Name: openni-unstable
 Maintainer: Hans-Christoph Steiner
 Source: https://github.com/OpenNI/OpenNI
 
 Copyright: 2010-2011, PrimeSense Ltd.
 License: GPL-3+
+
+Files: debian/*
+Copyright: 2010-2011, Hans-Christoph Steiner <hans@eds.org>
+	2011, Cosimo Alfarano <kalfa@debian.org>
+License: GPL-3+
+
 
 License: GPL-3+
  This package is free software; you can redistribute it and/or modify

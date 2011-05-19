@@ -1,20 +1,63 @@
-Source: openni
+Source: openni-unstable
 Priority: optional
+Section: libs
 Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
-Uploaders: Hans-Christoph Steiner <hans@eds.org>
+Uploaders: Hans-Christoph Steiner <hans@eds.org>,
+           Cosimo Alfarano <kalfa@debian.org>
 Build-Depends: debhelper (>= 7.0.50~),
-               libusb-1.0-0-dev,
-               python,
+               freeglut3-dev,
+               libusb-1.0-0-dev (>= 1.0.8),
+               python (>= 2.6),
                doxygen,
                graphviz
-Standards-Version: 3.9.1
+Standards-Version: 3.9.2
 Homepage: http://www.openni.org
 
-Package: openni
+Package: libopenni-unstable
+Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libusb-1.0-0
-Description: library to support 'Natural Interaction' for Kinect cameras
+         libusb-1.0-0,
+         openni-unstable-utils
+Description: framework for 'Natural Interaction'
  OpenNI is a framework for getting data to support 'Natural Interaction',
  i.e. skeleton tracking.
+ .
+ This is a build for the unstable branch
+
+Package: openni-unstable-utils
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+Description: framework for 'Natural Interaction'
+ OpenNI is a framework for getting data to support 'Natural Interaction',
+ i.e. skeleton tracking.
+ .
+ This is a build for the unstable branch
+
+
+Package: libopenni-unstable-dev
+Section: libdevel
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libopenni-unstable (= ${binary:Version})
+Suggests: openni-unstable-doc
+Description: framework for 'Natural Interaction'
+ OpenNI is a framework for getting data to support 'Natural Interaction',
+ i.e. skeleton tracking.
+ .
+ This is a build for the unstable branch
+
+Package: openni-unstable-doc
+Section: doc
+Architecture: all
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Description: framework for 'Natural Interaction'
+ OpenNI is a framework for getting data to support 'Natural Interaction',
+ i.e. skeleton tracking.
+ .
+ This is a build for the unstable branch

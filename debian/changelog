@@ -1,5 +1,11 @@
+openni-unstable (1.1.0.41-2) UNRELEASED; urgency=low
+
+  * Debian (DFSF) more compliant packaging
+
+ -- Cosimo Alfarano <kalfa@debian.org>  Thu, 19 May 2011 15:42:33 +0100
+
 openni (1.1.0.41-1) UNRELEASED; urgency=low
 
-  * Initial release (Closes: #XXXXXX)
+  * Initial release
 
  -- Hans-Christoph Steiner <hans@eds.org>  Wed, 10 Nov 2010 15:40:08 -0500

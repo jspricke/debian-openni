@@ -1,18 +1,18 @@
-OpenNI (Version 1.1.0.38 Stable version - Apr 11th 2010)
---------------------------------------------------------
+OpenNI (Version 1.1.0.39 Unstable version - Apr 11th 2010)
+----------------------------------------------------------
 
 Website: www.openni.org
 Forum: http://groups.google.com/group/openni-dev
 Wiki: Coming soon!
 
 Binaries are available at:
-http://www.openni.org/downloadfiles/openni-binaries/21-stable
+http://www.openni.org/downloadfiles/openni-binaries/20-latest-unstable
 
-Please use this with the sensor stable branch located at:
+Please use this with the sensor unstable branch located at:
 Source:
-https://github.com/PrimeSense/Sensor
+https://github.com/PrimeSense/Sensor/tree/unstable
 Binaries:
-http://www.openni.org/downloadfiles/openni-compliant-hardware-binaries/32-stable
+http://www.openni.org/downloadfiles/openni-compliant-hardware/31-latest-unstable
 
 
 Release Notes:

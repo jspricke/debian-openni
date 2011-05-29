@@ -21,23 +21,29 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          libusb-1.0-0,
          openni-utils
-Description: framework for 'Natural Interaction'
+Description: framework for sensor-based 'Natural Interaction'
  OpenNI is a framework for getting data to support 'Natural Interaction',
- i.e. skeleton tracking.
- .
- This is a build for the unstable branch
+ i.e. skeleton tracking, gesture tracking, and similar ways of getting data
+ from humans. OpenNI provides the interface for physical devices and for
+ middleware components. The API enables modules to be registered in the OpenNI
+ framework, which then produce sensory data. OpenNI also allows selection of
+ different hardware and middleware modules.
 
 Package: openni-utils
 Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-Description: framework for 'Natural Interaction'
+Description: debug and test utilities OpenNI framework
  OpenNI is a framework for getting data to support 'Natural Interaction',
- i.e. skeleton tracking.
+ i.e. skeleton tracking, gesture tracking, and similar ways of getting data
+ from humans. OpenNI provides the interface for physical devices and for
+ middleware components. The API enables modules to be registered in the OpenNI
+ framework, which then produce sensory data. OpenNI also allows selection of
+ different hardware and middleware modules.
  .
- This is a build for the unstable branch
-
+ This package provides a number of related utilities for debugging, testing,
+ and view the results of the sensor modules.
 
 Package: libopenni-dev
 Section: libdevel
@@ -46,19 +52,26 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          libopenni (= ${binary:Version})
 Suggests: openni-doc
-Description: framework for 'Natural Interaction'
+Description: headers for OpenNI 'Natural Interaction' frameworks
  OpenNI is a framework for getting data to support 'Natural Interaction',
- i.e. skeleton tracking.
- .
- This is a build for the unstable branch
+ i.e. skeleton tracking, gesture tracking, and similar ways of getting data
+ from humans. OpenNI provides the interface for physical devices and for
+ middleware components. The API enables modules to be registered in the OpenNI
+ framework, which then produce sensory data. OpenNI also allows selection of
+ different hardware and middleware modules.
 
 Package: openni-doc
 Section: doc
 Architecture: all
 Depends: ${shlibs:Depends},
          ${misc:Depends}
-Description: framework for 'Natural Interaction'
+Description: developer documentation for OpenNI frameworks
  OpenNI is a framework for getting data to support 'Natural Interaction',
- i.e. skeleton tracking.
+ i.e. skeleton tracking, gesture tracking, and similar ways of getting data
+ from humans. OpenNI provides the interface for physical devices and for
+ middleware components. The API enables modules to be registered in the OpenNI
+ framework, which then produce sensory data. OpenNI also allows selection of
+ different hardware and middleware modules.
  .
- This is a build for the unstable branch
+ This package provides developer documentation for developing using the OpenNI
+ frameworks.

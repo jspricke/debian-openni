@@ -12,7 +12,7 @@ includedir = $(prefix)/include
 docdir = $(prefix)/share/doc
 
 %:
-	dh --with quilt $@ --buildsystem=makefile
+	dh $@ --buildsystem=makefile
 
 override_dh_auto_build:
 	cd Platform/Linux-x86/CreateRedist && LDFLAGS=-lGL ./RedistMaker
@@ -31,7 +31,7 @@ override_dh_auto_install:
 	install -d $(DEST)/$(includedir)/ni
 	install -p $(COMPILED_LIB)/*.h \
 		$(DEST)/$(includedir)/ni
-	# Makefiles needed by (at least) PrimeSense Sensor
+# Makefiles needed by (at least) PrimeSense Sensor
 	install -p $(COMPILED_LIB)/*Makefile \
 		$(DEST)/$(includedir)/ni
 	install -d $(DEST)/$(includedir)/ni/Linux-Arm

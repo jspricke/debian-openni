@@ -1,4 +1,4 @@
-Source: openni-unstable
+Source: openni
 Priority: optional
 Section: libs
 Maintainer: Debian Multimedia Maintainers <pkg-multimedia-maintainers@lists.alioth.debian.org>
@@ -14,20 +14,20 @@ Build-Depends: debhelper (>= 7.0.50~),
 Standards-Version: 3.9.2
 Homepage: http://www.openni.org
 
-Package: libopenni-unstable
+Package: libopenni
 Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libusb-1.0-0,
-         openni-unstable-utils
+         openni-utils
 Description: framework for 'Natural Interaction'
  OpenNI is a framework for getting data to support 'Natural Interaction',
  i.e. skeleton tracking.
  .
  This is a build for the unstable branch
 
-Package: openni-unstable-utils
+Package: openni-utils
 Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
@@ -39,20 +39,20 @@ Description: framework for 'Natural Interaction'
  This is a build for the unstable branch
 
 
-Package: libopenni-unstable-dev
+Package: libopenni-dev
 Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libopenni-unstable (= ${binary:Version})
-Suggests: openni-unstable-doc
+         libopenni (= ${binary:Version})
+Suggests: openni-doc
 Description: framework for 'Natural Interaction'
  OpenNI is a framework for getting data to support 'Natural Interaction',
  i.e. skeleton tracking.
  .
  This is a build for the unstable branch
 
-Package: openni-unstable-doc
+Package: openni-doc
 Section: doc
 Architecture: all
 Depends: ${shlibs:Depends},

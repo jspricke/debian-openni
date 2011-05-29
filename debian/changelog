@@ -1,4 +1,4 @@
-openni-unstable (1.1.0.41-2) UNRELEASED; urgency=low
+openni (1.1.0.41-2) UNRELEASED; urgency=low
 
   * Debian (DFSF) more compliant packaging
 

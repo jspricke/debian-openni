@@ -1,5 +1,5 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?rev=135
-Name: openni-unstable
+Name: openni
 Maintainer: Hans-Christoph Steiner
 Source: https://github.com/OpenNI/OpenNI
 

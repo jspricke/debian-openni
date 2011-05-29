@@ -1,12 +1,12 @@
 Fix:
-E: openni-unstable source: missing-build-dependency quilt
-W: openni-unstable-doc: embedded-javascript-library usr/share/doc/openni-unstable-doc/html/jquery.js
-E: libopenni-unstable: embedded-library usr/lib/libOpenNI.so: tinyxml
-E: libopenni-unstable: embedded-library usr/lib/libnimCodecs.so: libjpeg
-E: libopenni-unstable: sharedobject-in-library-directory-missing-soname usr/lib/libOpenNI.so
-E: libopenni-unstable: sharedobject-in-library-directory-missing-soname usr/lib/libnimCodecs.so
-E: libopenni-unstable: sharedobject-in-library-directory-missing-soname usr/lib/libnimMockNodes.so
-E: libopenni-unstable: sharedobject-in-library-directory-missing-soname usr/lib/libnimRecorder.so
-W: openni-unstable-utils: binary-without-manpage usr/bin/niLicense
-W: openni-unstable-utils: binary-without-manpage usr/bin/niReg
+E: openni source: missing-build-dependency quilt
+W: openni-doc: embedded-javascript-library usr/share/doc/openni-unstable-doc/html/jquery.js
+E: libopenni: embedded-library usr/lib/libOpenNI.so: tinyxml
+E: libopenni: embedded-library usr/lib/libnimCodecs.so: libjpeg
+E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libOpenNI.so
+E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libnimCodecs.so
+E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libnimMockNodes.so
+E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libnimRecorder.so
+W: openni-utils: binary-without-manpage usr/bin/niLicense
+W: openni-utils: binary-without-manpage usr/bin/niReg
 

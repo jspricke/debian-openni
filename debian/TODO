@@ -7,6 +7,4 @@ E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libOpenNI
 E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libnimCodecs.so
 E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libnimMockNodes.so
 E: libopenni: sharedobject-in-library-directory-missing-soname usr/lib/libnimRecorder.so
-W: openni-utils: binary-without-manpage usr/bin/niLicense
-W: openni-utils: binary-without-manpage usr/bin/niReg
 

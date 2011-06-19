@@ -1,0 +1,3 @@
+# niLicense is a binary executable for registering licenses, so this is a
+# false alarm.
+openni-utils: extra-license-file ./usr/share/man/man1/niLicense.1.gz

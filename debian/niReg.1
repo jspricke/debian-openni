@@ -1,0 +1,39 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" First parameter, NAME, should be all caps
+.\" Second parameter, 1, should be 1-8, maybe w/ subsection
+.\" other parameters are allowed: see man(7), man(1)
+.TH NIREG 1 "June 2011"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+niReg \- register/unregister an OpenNI hardware or middleware driver
+.SH SYNOPSIS
+.B niReg
+[\fIFILE\fR]
+.SH DESCRIPTION
+This manual page documents briefly the
+.B niReg
+command.
+.PP
+.\" TeX users may be more comfortable with the \fB<whatever>\fP and
+.\" \fI<whatever>\fP escape sequences to invode bold face and italics,
+.\" respectively.
+\fBniReg\fP is a utility for registering and unregistering modules for the
+OpenNI frameworks.  It is used both for hardware modules like camera drivers
+and 'middleware' modules like the PrimeSense NITE skeleton and gesture
+tracking module.
+.SH AUTHOR
+niReg was written by OpenNI.org.
+.PP
+This manual page was written by Hans-Christoph Steiner <hans@eds.org>,
+for the Debian project (and may be used by others).

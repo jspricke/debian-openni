@@ -1,7 +1,7 @@
 Format-Specification: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?rev=135
 Name: openni
 Maintainer: Hans-Christoph Steiner
-Source: https://github.com/OpenNI/OpenNI
+Source: https://github.com/OpenNI/OpenNI/tarball/Stable-1.5.2.23
 
 Copyright: 2010-2011, PrimeSense Ltd.
 License: GPL-3+

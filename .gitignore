@@ -8,3 +8,4 @@ debian/openni.debhelper.log
 debian/files
 debian/openni
 debian/openni.substvars
+.pc/

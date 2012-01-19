@@ -1,4 +1,25 @@
-﻿using System;
+/****************************************************************************
+*                                                                           *
+*  OpenNI 1.x Alpha                                                         *
+*  Copyright (C) 2011 PrimeSense Ltd.                                       *
+*                                                                           *
+*  This file is part of OpenNI.                                             *
+*                                                                           *
+*  OpenNI is free software: you can redistribute it and/or modify           *
+*  it under the terms of the GNU Lesser General Public License as published *
+*  by the Free Software Foundation, either version 3 of the License, or     *
+*  (at your option) any later version.                                      *
+*                                                                           *
+*  OpenNI is distributed in the hope that it will be useful,                *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+*  GNU Lesser General Public License for more details.                      *
+*                                                                           *
+*  You should have received a copy of the GNU Lesser General Public License *
+*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
+*                                                                           *
+****************************************************************************/
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
@@ -89,7 +110,7 @@ namespace OpenNI
 
 		#region IDisposable Members
 
-		public void Dispose()
+        public virtual void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
@@ -109,6 +130,11 @@ namespace OpenNI
 			}
 		}
 
+		protected internal void UnsafeReplaceInternalObject(IntPtr ptr)
+		{
+			this.ptr = ptr;
+		}
+
 		protected abstract void FreeObject(IntPtr ptr, bool disposing);
 
 		protected virtual void Dispose(bool disposing)
@@ -118,11 +144,6 @@ namespace OpenNI
 				FreeObject(this.ptr, disposing);
 				this.ptr = IntPtr.Zero;
 			}
-		}
-
-		internal void MarkAlreadyFreed()
-		{
-			this.ptr = IntPtr.Zero;
 		}
 
 		private IntPtr ptr;
@@ -251,10 +272,19 @@ namespace OpenNI
 		internal NodeWrapper(IntPtr hNode, bool addRef)
 			: base(hNode)
 		{
+			this.contextShuttingDownHandler = OnContextShuttingDown;
+
 			if (addRef)
 			{
 				WrapperUtils.ThrowOnError(SafeNativeMethods.xnProductionNodeAddRef(hNode));
 			}
+
+			IntPtr pContext = SafeNativeMethods.xnGetRefContextFromNodeHandle(hNode);
+			
+			int status = SafeNativeMethods.xnContextRegisterForShutdown(pContext, this.contextShuttingDownHandler, IntPtr.Zero, out this.hShutdownCallback);
+			WrapperUtils.ThrowOnError(status);
+
+			SafeNativeMethods.xnContextRelease(pContext);
 		}
 
 		public override bool Equals(object obj)
@@ -291,8 +321,23 @@ namespace OpenNI
 
 		protected override void FreeObject(IntPtr ptr, bool disposing)
 		{
+			IntPtr pContext = SafeNativeMethods.xnGetRefContextFromNodeHandle(ptr);
+			SafeNativeMethods.xnContextUnregisterFromShutdown(pContext, this.hShutdownCallback);
+			SafeNativeMethods.xnContextRelease(pContext);
 			SafeNativeMethods.xnProductionNodeRelease(ptr);
 		}
+
+		private void OnContextShuttingDown(IntPtr pContext, IntPtr pCookie)
+		{
+			// the context is shutting down
+			// no need to unregister from shutting down event - the event is destroyed anyway
+			UnsafeReplaceInternalObject(IntPtr.Zero);
+
+			Dispose();
+		}
+
+		private SafeNativeMethods.XnContextShuttingDownHandler contextShuttingDownHandler;
+		private IntPtr hShutdownCallback;
 	};
 
 	public class Capability : NodeWrapper
@@ -304,6 +349,19 @@ namespace OpenNI
 		}
 
 		internal ProductionNode node;
+
+        /// @todo this is a temporary solution for capability not being disposed by anyone external
+        public override void Dispose()
+        {
+            // we do nothing because we basically want to make the public dispose do nothing!
+
+        }
+
+        /// @todo this is a temporary solution for capability not being disposed by anyone external
+        internal virtual void InternalDispose()
+        {
+            base.Dispose();
+        }
 	}
 
 	public interface IMarshaler : IDisposable

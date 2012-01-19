@@ -50,8 +50,9 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="4"
 				DebugInformationFormat="4"
+				DisableSpecificWarnings="4127"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -129,8 +130,9 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="4"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4127"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -202,6 +204,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -214,8 +217,9 @@
 				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="4"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4127"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -289,6 +293,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				Optimization="2"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
@@ -298,11 +303,11 @@
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;XN_EXPORTS"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
-				EnableEnhancedInstructionSet="2"
 				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="4"
 				DebugInformationFormat="3"
+				DisableSpecificWarnings="4127"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -436,7 +441,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\Source\OpenNI\xnInternalFuncs.h"
+					RelativePath="..\..\..\..\Source\OpenNI\XnInternalFuncs.h"
 					>
 				</File>
 				<File
@@ -477,10 +482,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\Include\XnUtils.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\Source\OpenNI\XnXmlConfig.cpp"
 					>
 				</File>
 			</Filter>
@@ -596,6 +597,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\Source\OpenNI\Win32\XnOSWin32Internal.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\Source\OpenNI\XnUSB.cpp"
 					>
 				</File>
@@ -629,14 +634,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\Include\XnFPSCalculator.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\Source\OpenNI\XnLog.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\Include\XnLog.h"
 					>
 				</File>
 				<File
@@ -861,6 +858,86 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\Source\OpenNI\XnLicensingInternal.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Log"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnDump.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Include\XnDump.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnDumpFileWriter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnDumpFileWriter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Include\XnDumpWriters.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnLog.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Include\XnLog.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnLogConsoleWriter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnLogConsoleWriter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnLogFileWriter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnLogFileWriter.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Include\XnLogTypes.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Include\XnLogWriterBase.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Nodes"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnExportedNodes.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnXmlScriptNode.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnXmlScriptNode.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnXmlScriptNodeExporter.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\OpenNI\XnXmlScriptNodeExporter.h"
 					>
 				</File>
 			</Filter>

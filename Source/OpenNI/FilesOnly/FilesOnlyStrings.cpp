@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -170,6 +170,12 @@ XN_C_API XnStatus xnOSStrCopy(XnChar* cpDestString, const XnChar* cpSrcString, c
 
 	// All is good...
 	return (XN_STATUS_OK);
+}
+
+XN_C_API XnUInt32 xnOSStrLen(const XnChar* cpString)
+{
+	XN_VALIDATE_PTR(cpString, 0);
+	return (XnUInt32)strlen(cpString);
 }
 
 XN_C_API XnStatus xnOSStrNCopy(XnChar* cpDestString, const XnChar* cpSrcString, const XnUInt32 nCopyLength, const XnUInt32 nDestLength)

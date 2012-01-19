@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -24,6 +24,7 @@
 //---------------------------------------------------------------------------
 #include "XnLicensing.h"
 #include "XnInternalTypes.h"
+#include "xnInternalFuncs.h"
 #include "XnXml.h"
 
 //---------------------------------------------------------------------------
@@ -72,10 +73,10 @@ public:
 		nRetVal = xnXmlReadStringAttribute(pElement, XN_XML_LICENSE_KEY, &strKey);
 		XN_IS_STATUS_OK(nRetVal);
 
-		nRetVal = xnOSStrNCopy(this->strVendor, strVendor, strlen(strVendor) + 1, sizeof(this->strVendor));
+		nRetVal = xnOSStrNCopy(this->strVendor, strVendor, xnOSStrLen(strVendor) + 1, sizeof(this->strVendor));
 		XN_IS_STATUS_OK(nRetVal);
 
-		nRetVal = xnOSStrNCopy(this->strKey, strKey, strlen(strKey) + 1, sizeof(this->strKey));
+		nRetVal = xnOSStrNCopy(this->strKey, strKey, xnOSStrLen(strKey) + 1, sizeof(this->strKey));
 		XN_IS_STATUS_OK(nRetVal);
 		
 		return (XN_STATUS_OK);
@@ -129,24 +130,11 @@ XnStatus resolveLicensesFile(XnChar* strFileName, XnUInt32 nBufSize)
 {
 	XnStatus nRetVal = XN_STATUS_OK;
 
-#if (XN_PLATFORM == XN_PLATFORM_WIN32)
-	#ifdef _M_X64
-		nRetVal = xnOSExpandEnvironmentStrings("%OPEN_NI_INSTALL_PATH64%\\Data\\licenses.xml", strFileName, nBufSize);
-		XN_IS_STATUS_OK(nRetVal);
-	#else
-		nRetVal = xnOSExpandEnvironmentStrings("%OPEN_NI_INSTALL_PATH%\\Data\\licenses.xml", strFileName, nBufSize);
-		XN_IS_STATUS_OK(nRetVal);
-	#endif
-#elif (CE4100)
-	nRetVal = xnOSStrCopy(strFileName, "/usr/etc/ni/licenses.xml", nBufSize);
+	nRetVal = xnGetOpenNIConfFilesPath(strFileName, nBufSize);
 	XN_IS_STATUS_OK(nRetVal);
-#elif (XN_PLATFORM == XN_PLATFORM_LINUX_X86 || XN_PLATFORM == XN_PLATFORM_LINUX_ARM || XN_PLATFORM == XN_PLATFORM_MACOSX)
-	nRetVal = xnOSStrCopy(strFileName, "/var/lib/ni/licenses.xml", nBufSize);
+
+	nRetVal = xnOSStrAppend(strFileName, "licenses.xml", nBufSize);
 	XN_IS_STATUS_OK(nRetVal);
-#else
-	nRetVal = xnOSStrCopy(strFileName, "licenses.xml", nBufSize);
-	XN_IS_STATUS_OK(nRetVal);
-#endif
 
 	return (XN_STATUS_OK);
 }
@@ -363,8 +351,6 @@ XN_C_API XnStatus xnAddLicense(XnContext* pContext, const XnLicense* pLicense)
 
 XN_C_API XnStatus xnEnumerateLicenses(XnContext* pContext, XnLicense** paLicenses, XnUInt32* pnCount)
 {
-	XnStatus nRetVal = XN_STATUS_OK;
-
 	XN_VALIDATE_INPUT_PTR(pContext);
 	XN_VALIDATE_OUTPUT_PTR(paLicenses);
 	XN_VALIDATE_OUTPUT_PTR(pnCount);

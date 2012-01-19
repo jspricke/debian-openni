@@ -90,6 +90,9 @@
     <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\Device.cs">
       <Link>Nodes\Device.cs</Link>
     </Compile>
+    <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\DeviceIdentificationCapability.cs">
+      <Link>Capabilities\DeviceIdentificationCapability.cs</Link>
+    </Compile>
     <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\EnumerationErrors.cs">
       <Link>EnumerationErrors.cs</Link>
     </Compile>
@@ -107,6 +110,9 @@
     </Compile>
     <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\HandsGenerator.cs">
       <Link>Nodes\HandsGenerator.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\HandTouchingFOVEdgeCapability.cs">
+      <Link>Capabilities\HandTouchingFOVEdgeCapability.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\ImageGenerator.cs">
       <Link>Nodes\ImageGenerator.cs</Link>
@@ -182,6 +188,9 @@
     </Compile>
     <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\SceneMetaData.cs">
       <Link>MetaData\SceneMetaData.cs</Link>
+    </Compile>
+    <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\ScriptNode.cs">
+      <Link>Nodes\ScriptNode.cs</Link>
     </Compile>
     <Compile Include="..\..\..\..\..\Wrappers\OpenNI.net\SkeletonCapability.cs">
       <Link>Capabilities\SkeletonCapability.cs</Link>

@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -36,6 +36,7 @@
 // Global Variables
 // --------------------------------
 Context g_Context;
+ScriptNode g_scriptNode;
 
 DeviceStringProperty g_PrimaryStream;
 DeviceParameter g_Registration;
@@ -173,7 +174,7 @@ XnStatus openDeviceFile(const char* csFile)
 {
 	XnStatus nRetVal = g_Context.Init();
 	XN_IS_STATUS_OK(nRetVal);
-	nRetVal = g_Context.OpenFileRecording(csFile);
+	nRetVal = g_Context.OpenFileRecording(csFile, g_Player);
 	XN_IS_STATUS_OK(nRetVal);
 	openCommon();
 
@@ -184,7 +185,7 @@ XnStatus openDeviceFromXml(const char* csXmlFile, EnumerationErrors& errors)
 {
 	XnStatus nRetVal = XN_STATUS_OK;
 
-	nRetVal = g_Context.InitFromXmlFile(csXmlFile, &errors);
+	nRetVal = g_Context.InitFromXmlFile(csXmlFile, g_scriptNode, &errors);
 	XN_IS_STATUS_OK(nRetVal);
 
 	openCommon();
@@ -217,8 +218,7 @@ XnStatus openDeviceFromXmlWithChoice(const char* csXmlFile, EnumerationErrors& e
 		XnBool bExists = deviceNode.IsValid();
 		if (!bExists)
 		{
-			g_Context.CreateProductionTree(deviceNodeInfo);
-			deviceNodeInfo.GetInstance(deviceNode);
+			g_Context.CreateProductionTree(deviceNodeInfo, deviceNode);
 			// this might fail.
 		}
 
@@ -249,7 +249,7 @@ XnStatus openDeviceFromXmlWithChoice(const char* csXmlFile, EnumerationErrors& e
 	printf("Choose device to open (1): ");
 
 	int chosen = 1;
-	scanf("%d", &chosen);
+	int nRetval = scanf("%d", &chosen);
 
 	// create it
 	NodeInfoList::Iterator it = list.Begin();
@@ -259,11 +259,11 @@ XnStatus openDeviceFromXmlWithChoice(const char* csXmlFile, EnumerationErrors& e
 	}
 
 	NodeInfo deviceNode = *it;
-	nRetVal = g_Context.CreateProductionTree(deviceNode);
+	nRetVal = g_Context.CreateProductionTree(deviceNode, g_Device);
 	XN_IS_STATUS_OK(nRetVal);
 
 	// now run the rest of the XML
-	nRetVal = g_Context.RunXmlScriptFromFile(csXmlFile, &errors);
+	nRetVal = g_Context.RunXmlScriptFromFile(csXmlFile, g_scriptNode, &errors);
 	XN_IS_STATUS_OK(nRetVal);
 
 	openCommon();
@@ -273,7 +273,14 @@ XnStatus openDeviceFromXmlWithChoice(const char* csXmlFile, EnumerationErrors& e
 
 void closeDevice()
 {
-	g_Context.Shutdown();
+	g_Player.Release();
+	g_Device.Release();
+	g_Depth.Release();
+	g_Image.Release();
+	g_IR.Release();
+	g_Audio.Release();
+	g_scriptNode.Release();
+	g_Context.Release();
 }
 
 void readFrame()
@@ -401,7 +408,7 @@ void toggleStream(Generator& generator, XnProductionNodeType type, bool* bIsOn)
 	}
 	else
 	{
-		generator.StartGenerating();
+		nRetVal = generator.StartGenerating();
 		if (nRetVal != XN_STATUS_OK)
 		{
 			displayMessage("Failed to turn on %s: %s", generator.GetInfo().GetInstanceName(), xnGetStatusString(nRetVal));

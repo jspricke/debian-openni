@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -22,11 +22,19 @@
 #ifndef __XNINTERNALFUNCS_H__
 #define __XNINTERNALFUNCS_H__
 
+#include <XnModuleInterface.h>
+
 //---------------------------------------------------------------------------
 // ExtendedSerialization
 //---------------------------------------------------------------------------
 XnStatus xnNotifyExState(XnNodeHandle hInstance, XnNodeNotifications* pNotifications, void* pCookie);
 void xnUnregisterExNotifications(XnNodeHandle hInstance);
 
+//---------------------------------------------------------------------------
+// Others
+//---------------------------------------------------------------------------
+XnOpenNIModuleInterface* GetOpenNIModuleInterface();
+void GetOpenNIScriptNodeDescription(XnProductionNodeDescription* pDescription);
+XnStatus xnGetOpenNIConfFilesPath(XnChar* strDest, XnUInt32 nBufSize);
 
 #endif // __XNINTERNALFUNCS_H__

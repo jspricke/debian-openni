@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -22,105 +22,186 @@
 //---------------------------------------------------------------------------
 // Includes
 //---------------------------------------------------------------------------
-#include <XnOS.h>
+#include <XnLog.h>
 #include <XnStringsHash.h>
 #include <XnVersion.h>
 #include <stdarg.h>
 #include "XnXml.h"
+#include <XnList.h>
+#include <XnArray.h>
 
-#define XN_LOG_IMPL
-#include <XnLog.h>
+#include "XnLogConsoleWriter.h"
+#include "XnLogFileWriter.h"
 
 //---------------------------------------------------------------------------
 // Defines
 //---------------------------------------------------------------------------
-#define XN_LOG_MASKS_DELIM	";"
+#define XN_LOG_MASKS_DELIM			";"
+#define XN_LOG_MAX_MESSAGE_LENGTH	2048
 
 //---------------------------------------------------------------------------
 // Types
 //---------------------------------------------------------------------------
-class XnLoggerData
+XN_DECLARE_LIST(const XnLogWriter*, XnLogWritersList);
+
+XN_DECLARE_STRINGS_HASH(XnLogger, XnLogMasksHash);
+
+class XnBufferedLogEntry : public XnLogEntry
 {
 public:
-	XnLoggerData() : m_fLogFile(XN_INVALID_FILE_HANDLE)
+	XnBufferedLogEntry()
 	{
+		this->strMessage = m_strBuffer;
+	}
+
+	XnChar* Buffer() { return m_strBuffer; }
+	XnUInt32 MaxBufferSize() const { return XN_LOG_MAX_MESSAGE_LENGTH; }
+
+private:
+	XnChar m_strBuffer[XN_LOG_MAX_MESSAGE_LENGTH];
+};
+
+class LogData
+{
+public:
+	static LogData& GetInstance()
+	{
+		static LogData data;
+		return data;
+	}
+
+	~LogData()
+	{
+		// This is important. During process shutdown all static objects are destroyed, including log objects
+		// (like writers list). But the order can't be controlled, so some objects might be destroyed *after*
+		// log has. Those objects might write down to the log during destruction which will cause access violation.
+		// So, when the log is destroyed, we're turning it off, so that no writing will take place.
 		Reset();
 	}
 
 	void Reset()
 	{
-		CloseFile();
-		m_csLogDir[0] = '\0';
-		m_nLogFilteringType = XN_LOG_WRITE_NONE;
-		m_bWriteLineInfo = TRUE;
-		m_nDumpFilteringType = XN_LOG_WRITE_NONE;
+		SetMinSeverityGlobally(XN_LOG_SEVERITY_NONE);
+		this->strLogDir[0] = '\0';
+		this->strSessionTimestamp[0] = '\0';
 	}
 
-	void CloseFile()
+	void SetMinSeverityGlobally(XnLogSeverity severity)
 	{
-		m_bBannerPrinted = FALSE;
-		if (m_fLogFile != XN_INVALID_FILE_HANDLE)
+		this->defaultMinSeverity = severity;
+		for (XnLogMasksHash::Iterator it = this->pMasksHash->begin(); it != this->pMasksHash->end(); ++it)
 		{
-			xnOSCloseFile(&m_fLogFile);
-			m_fLogFile = XN_INVALID_FILE_HANDLE; 
+			it.Value().nMinSeverity = severity;
 		}
-		m_csTime[0] = '\0';
 	}
 
-	XnStringsHash m_LogMasks;
-	XN_FILE_HANDLE m_fLogFile;
-	XnChar m_csLogDir[XN_FILE_MAX_PATH];
-	XnChar m_csTime[25];
-	XnLogFilteringType m_nLogFilteringType;
-	XnLogSeverity m_nFilterSeverity;
-	XnBool m_bWriteLineInfo;
-	XnBool m_bWriteToConsole;
-	XnBool m_bWriteToFile;
+	XnChar strLogDir[XN_FILE_MAX_PATH];
+	XnLogMasksHash* pMasksHash;
+	XnLogSeverity defaultMinSeverity;
+	XnLogWritersList writers;
+	XnChar strSessionTimestamp[25];
 
-	XnLogFilteringType m_nDumpFilteringType;
-	XnStringsHash m_DumpMasks;
+	// Writers
+	XnLogConsoleWriter consoleWriter;
+	XnLogFileWriter fileWriter;
 
-	XnBool m_bBannerPrinted;
+private:
+	LogData()
+	{
+		// NOTE: as our log implementation returns a pointer directly into this hash, we can't
+		// free this memory in our dtor (static objects dtors are called in unknown order. modules
+		// might still access this memory after our dtor is called).
+		// As in any case, this is a static object which will only be destroyed when the process goes 
+		// down - we can allow this.
+		this->pMasksHash = XN_NEW(XnLogMasksHash);
+		Reset();
+	}
 };
 
-static XnLoggerData g_xnLoggerData;
+//---------------------------------------------------------------------------
+// Globals
+//---------------------------------------------------------------------------
+XnLogger* XN_LOGGER_RETVAL_CHECKS = xnLoggerOpen(XN_MASK_RETVAL_CHECKS);
+
+//---------------------------------------------------------------------------
+// Forward-Declaration
+//---------------------------------------------------------------------------
+static XnStatus xnLogBCSetMaskState(const XnChar* strMask, XnBool bEnabled);
+static XnStatus xnLogBCSetSeverityFilter(XnLogSeverity nMinSeverity);
 
 //---------------------------------------------------------------------------
 // Code
 //---------------------------------------------------------------------------
-
-const XnChar* xnLogGetSeverityString(XnLogSeverity nSeverity);
-void xnLogWriteImplV(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, va_list args);
-
-void xnLogGetMasksString(XnChar* csString)
+static const XnChar* xnLogGetSeverityString(XnLogSeverity nSeverity)
 {
-	switch (g_xnLoggerData.m_nLogFilteringType)
+	switch (nSeverity)
 	{
-	case XN_LOG_WRITE_NONE:
-		xnOSStrCopy(csString, "NONE", XN_LOG_MASKS_STRING_LEN);
-		return;
-	case XN_LOG_WRITE_ALL:
-		xnOSStrCopy(csString, "ALL", XN_LOG_MASKS_STRING_LEN);
-		return;
-	case XN_LOG_WRITE_MASKS:
-		{
-			csString[0] = '\0';
-
-			for (XnStringsHash::Iterator it = g_xnLoggerData.m_LogMasks.begin(); it != g_xnLoggerData.m_LogMasks.end(); ++it)
-			{
-				xnOSStrAppend(csString, it.Key(), XN_LOG_MASKS_STRING_LEN);
-				xnOSStrAppend(csString, ";", XN_LOG_MASKS_STRING_LEN);
-			}
-
-			return;
-		}
+	case XN_LOG_VERBOSE:
+		return "VERBOSE";
+	case XN_LOG_INFO:
+		return "INFO";
+	case XN_LOG_WARNING:
+		return "WARNING";
+	case XN_LOG_ERROR:
+		return "ERROR";
+	case XN_LOG_SEVERITY_NONE:
+		return "NONE";
 	default:
-		xnOSStrCopy(csString, "UNKNOWN", XN_LOG_MASKS_STRING_LEN);
-		return;
+		return "UNKNOWN";
 	}
 }
 
-void xnLogWriteImpl(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, ...)
+static void xnLogCreateEntryV(XnBufferedLogEntry* pEntry, const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, va_list args)
+{
+	// format message
+	XnUInt32 nChars;
+	xnOSStrFormatV(pEntry->Buffer(), pEntry->MaxBufferSize(), &nChars, csFormat, args);
+
+	// create log entry
+	xnOSGetHighResTimeStamp(&pEntry->nTimestamp);
+	pEntry->nSeverity = nSeverity;
+	pEntry->strSeverity = xnLogGetSeverityString(nSeverity);
+	pEntry->strMask = csLogMask;
+	pEntry->strFile = csFile;
+	pEntry->nLine = nLine;
+}
+
+static void xnLogCreateEntry(XnBufferedLogEntry* pEntry, const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, ...)
+{
+	va_list args;
+	va_start(args, csFormat);
+	xnLogCreateEntryV(pEntry, csLogMask, nSeverity, csFile, nLine, csFormat, args);
+	va_end(args);
+}
+
+static void xnLogWriteEntry(XnLogEntry* pEntry)
+{
+	LogData& logData = LogData::GetInstance();
+	for (XnLogWritersList::ConstIterator it = logData.writers.begin(); it != logData.writers.end(); ++it)
+	{
+		const XnLogWriter* pWriter = *it;
+		pWriter->WriteEntry(pEntry, pWriter->pCookie);
+	}
+}
+
+static void xnLogWriteImplV(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, va_list args)
+{
+	// check if there are any writers registered
+	LogData& logData = LogData::GetInstance();
+	if (logData.writers.IsEmpty())
+	{
+		// don't waste time formatting anything.
+		return;
+	}
+
+	XnBufferedLogEntry entry;
+	xnLogCreateEntryV(&entry, csLogMask, nSeverity, csFile, nLine, csFormat, args);
+
+	// write it down
+	xnLogWriteEntry(&entry);
+}
+
+static void xnLogWriteImpl(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, ...)
 {
 	va_list args;
 	va_start(args, csFormat);
@@ -128,47 +209,137 @@ void xnLogWriteImpl(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnCh
 	va_end(args);
 }
 
-XnStatus xnLogCreateFile(const XnChar* csFileName, XN_FILE_HANDLE* phFile)
+XN_C_API XnStatus XN_C_DECL xnLogCreateFileEx(const XnChar* csFileName, XnBool bSessionBased, XN_FILE_HANDLE* phFile)
 {
-	// create the log directory (to make sure it exists)
-	xnOSCreateDirectory(g_xnLoggerData.m_csLogDir);
+	XnStatus nRetVal = XN_STATUS_OK;
 
-	// now open the file
-	return xnOSOpenFile(csFileName, XN_OS_FILE_WRITE | XN_OS_FILE_TRUNCATE, phFile);
+	LogData& logData = LogData::GetInstance();
+
+	// set log directory
+	if (logData.strLogDir[0] == '\0')
+	{
+		nRetVal = xnLogSetOutputFolder(XN_LOG_DIR_NAME);
+		XN_IS_STATUS_OK(nRetVal);
+	}
+
+	if (logData.strSessionTimestamp[0] == '\0')
+	{
+		time_t currtime;
+		time(&currtime);
+		strftime(logData.strSessionTimestamp, sizeof(logData.strSessionTimestamp)-1, "%Y_%m_%d__%H_%M_%S", localtime(&currtime)); 
+	}
+
+	XN_PROCESS_ID nProcID = 0;
+	xnOSGetCurrentProcessID(&nProcID);
+
+	// create full path file name - add process start time and process ID
+	XnChar strFilePath[XN_FILE_MAX_PATH];
+	XnUInt32 nPathSize = 0;
+	XnUInt32 nCharsWritten = 0;
+	nRetVal = xnOSStrFormat(strFilePath, XN_FILE_MAX_PATH - nPathSize, &nCharsWritten, "%s", logData.strLogDir);
+	XN_IS_STATUS_OK(nRetVal);
+	nPathSize += nCharsWritten;
+
+	if (bSessionBased)
+	{
+		nRetVal = xnOSStrFormat(strFilePath + nPathSize, XN_FILE_MAX_PATH - nPathSize, &nCharsWritten, "%s_%u.", logData.strSessionTimestamp, nProcID);
+		XN_IS_STATUS_OK(nRetVal);
+		nPathSize += nCharsWritten;
+	}
+
+	nRetVal = xnOSStrFormat(strFilePath + nPathSize, XN_FILE_MAX_PATH - nPathSize, &nCharsWritten, "%s", csFileName);
+	XN_IS_STATUS_OK(nRetVal);
+	nPathSize += nCharsWritten;
+
+	// and open the file
+	nRetVal = xnOSOpenFile(strFilePath, XN_OS_FILE_WRITE | XN_OS_FILE_TRUNCATE, phFile);
+	XN_IS_STATUS_OK(nRetVal);
+
+	return (XN_STATUS_OK);
 }
 
-void xnLogConfigurationChanged()
+XN_C_API XnStatus xnLogCreateFile(const XnChar* csFileName, XN_FILE_HANDLE* phFile)
 {
-	// if new configuration requires a log file, and we don't have one opened
-	if (g_xnLoggerData.m_nLogFilteringType != XN_LOG_WRITE_NONE && g_xnLoggerData.m_bWriteToFile && g_xnLoggerData.m_fLogFile == XN_INVALID_FILE_HANDLE)
+	return xnLogCreateFileEx(csFileName, TRUE, phFile);
+}
+
+static void xnLogCreateFilterChangedMessage(XnBufferedLogEntry* pEntry)
+{
+	XnStatus nRetVal = XN_STATUS_OK;
+	
+	LogData& logData = LogData::GetInstance();
+
+	XnChar strConfigMessage[XN_LOG_MAX_MESSAGE_LENGTH];
+	XnUInt32 nCharsWritten = 0;
+	XnUInt32 nMessageLength = 0;
+	nRetVal = xnOSStrFormat(strConfigMessage, XN_LOG_MAX_MESSAGE_LENGTH, &nCharsWritten, "--- Filter Info --- Minimum Severity: %s", xnLogGetSeverityString(logData.defaultMinSeverity));
+	XN_ASSERT(nRetVal == XN_STATUS_OK);
+	nMessageLength += nCharsWritten;
+
+	XnBool bOverrides = FALSE;
+
+	// go over masks, and see if there are any overrides
+	for (XnLogMasksHash::ConstIterator it = logData.pMasksHash->begin(); it != logData.pMasksHash->end(); ++it)
 	{
-		XN_PROCESS_ID nProcID = 0;
-		xnOSGetCurrentProcessID(&nProcID);
-		XnChar strFileName[XN_FILE_MAX_PATH];
-		sprintf(strFileName, "%s%s_%u.log", g_xnLoggerData.m_csLogDir, g_xnLoggerData.m_csTime, nProcID);
-		XnStatus nRetVal = xnLogCreateFile(strFileName, &g_xnLoggerData.m_fLogFile);
-		if (nRetVal != XN_STATUS_OK)
+		XnLogSeverity maskSeverity = it.Value().nMinSeverity;
+		if (maskSeverity != logData.defaultMinSeverity)
 		{
-			// we don't have much to do if files can't be open. Logs will not be written to file
-			printf("Couldn't create log file %s! Logs will not be written (error: %s)\n", strFileName, xnGetStatusString(nRetVal));
-			g_xnLoggerData.m_fLogFile = XN_INVALID_FILE_HANDLE;
-			g_xnLoggerData.m_bWriteToFile = FALSE;
+			if (!bOverrides)
+			{
+				nRetVal = xnOSStrFormat(strConfigMessage + nMessageLength, sizeof(strConfigMessage) - nMessageLength, &nCharsWritten, ". Overriding Masks - ");
+				XN_ASSERT(nRetVal == XN_STATUS_OK);
+				bOverrides = TRUE;
+				nMessageLength += nCharsWritten;
+			}
+			else
+			{
+				nRetVal = xnOSStrFormat(strConfigMessage + nMessageLength, sizeof(strConfigMessage) - nMessageLength, &nCharsWritten, ", ");
+				XN_ASSERT(nRetVal == XN_STATUS_OK);
+				nMessageLength += nCharsWritten;
+			}
+
+			nRetVal = xnOSStrFormat(strConfigMessage + nMessageLength, sizeof(strConfigMessage) - nMessageLength, &nCharsWritten, "'%s': %s", it.Key(), xnLogGetSeverityString(maskSeverity));
+			XN_ASSERT(nRetVal == XN_STATUS_OK);
+			nMessageLength += nCharsWritten;
 		}
 	}
 
-	if (!g_xnLoggerData.m_bBannerPrinted && xnLogIsEnabled(XN_MASK_LOG, XN_LOG_INFO))
-	{
-		xnLogInfo(XN_MASK_LOG, "OpenNI version is %s", XN_VERSION_STRING);
-		g_xnLoggerData.m_bBannerPrinted = TRUE;
-	}
+	xnLogCreateEntry(pEntry, XN_MASK_LOG, XN_LOG_INFO, __FILE__, __LINE__, "%s", strConfigMessage);
+}
 
-	if (g_xnLoggerData.m_fLogFile != XN_INVALID_FILE_HANDLE)
+static void xnLogFilterChanged()
+{
+	XnBufferedLogEntry entry;
+	xnLogCreateFilterChangedMessage(&entry);
+	xnLogWriteEntry(&entry);
+
+	LogData& logData = LogData::GetInstance();
+	for (XnLogWritersList::ConstIterator it = logData.writers.begin(); it != logData.writers.end(); ++it)
 	{
-		XnChar csMasks[XN_LOG_MASKS_STRING_LEN];
-		xnLogGetMasksString(csMasks);
-		xnLogWriteImpl(XN_MASK_LOG, XN_LOG_INFO, __FILE__, __LINE__, "Log system initialized. Console: %d, File: %d, Severity: %s, Masks: %s",
-			g_xnLoggerData.m_bWriteToConsole, g_xnLoggerData.m_bWriteToFile, xnLogGetSeverityString(g_xnLoggerData.m_nFilterSeverity), csMasks);
+		const XnLogWriter* pWriter = *it;
+		pWriter->OnConfigurationChanged(pWriter->pCookie);
 	}
+}
+
+XN_C_API void xnLogWriteBanner(const XnLogWriter* pWriter)
+{
+	XnBufferedLogEntry entry;
+
+	// write system time
+	time_t currtime;
+	time(&currtime);
+	XnChar strTime[200];
+	strftime(strTime, sizeof(strTime) - 1, "%Y-%m-%d %H:%M:%S", localtime(&currtime)); 
+	xnLogCreateEntry(&entry, XN_MASK_LOG, XN_LOG_INFO, __FILE__, __LINE__, "New log started on %s", strTime);
+	pWriter->WriteEntry(&entry, pWriter->pCookie);
+
+	// write version
+	xnLogCreateEntry(&entry, XN_MASK_LOG, XN_LOG_INFO, __FILE__, __LINE__, "OpenNI version is %s", XN_VERSION_STRING);
+	pWriter->WriteEntry(&entry, pWriter->pCookie);
+
+	// write filters
+	xnLogCreateFilterChangedMessage(&entry);
+	pWriter->WriteEntry(&entry, pWriter->pCookie);
 }
 
 XN_C_API XnStatus xnLogInitSystem()
@@ -180,57 +351,44 @@ XN_C_API XnStatus xnLogInitSystem()
 		return (nRetVal);
 	}
 
-	if (g_xnLoggerData.m_csLogDir[0] == '\0')
-	{
-		XnChar csCurDir[XN_FILE_MAX_PATH];
-		xnOSGetCurrentDir(csCurDir, XN_FILE_MAX_PATH);
-		XnUInt32 nBytesWritten;
-		xnOSStrFormat(g_xnLoggerData.m_csLogDir, XN_FILE_MAX_PATH, &nBytesWritten, "%s%s%s%s", csCurDir, XN_FILE_DIR_SEP, XN_LOG_DIR_NAME, XN_FILE_DIR_SEP);
-	}
-
-	if (g_xnLoggerData.m_csTime[0] == '\0')
-	{
-		time_t currtime;
-		time(&currtime);
-		strftime(g_xnLoggerData.m_csTime, sizeof(g_xnLoggerData.m_csTime)-1, "%Y_%m_%d__%H_%M_%S", localtime(&currtime)); 
-	}
-
-	xnLogConfigurationChanged();
-
 	return (XN_STATUS_OK);
 }
 
-void xnLogSetMasks(XnChar* csMasks, XnStringsHash* pMasksHash)
+typedef XnStatus (*XnSetMaskFunc)(const XnChar* csMask, XnBool bEnabled);
+
+static XnStatus xnLogSetMasks(XnChar* csMasks, XnSetMaskFunc pSetMaskFunc)
 {
-	pMasksHash->Clear();
+	XnStatus nRetVal = XN_STATUS_OK;
+
+	nRetVal = xnLogBCSetMaskState(XN_LOG_MASK_ALL, FALSE);
+	XN_IS_STATUS_OK(nRetVal);
 
 	XnChar* pMask = strtok(csMasks, XN_LOG_MASKS_DELIM);
 	while (pMask != NULL)
 	{
-		pMasksHash->Set(pMask, NULL);
+		nRetVal = pSetMaskFunc(pMask, TRUE);
+		XN_IS_STATUS_OK(nRetVal);
+
+		// get next
 		pMask = strtok(NULL, XN_LOG_MASKS_DELIM);
 	}
+
+	return (XN_STATUS_OK);
 }
 
-void xnLogReadMasksFromINI(const XnChar* cpINIFileName, const XnChar* cpSectionName, const XnChar* cpKey, XnLogFilteringType* pFilteringType, XnStringsHash* pMasksHash)
+static XnStatus xnLogReadMasksFromINI(const XnChar* cpINIFileName, const XnChar* cpSectionName, const XnChar* cpKey, XnSetMaskFunc pSetMaskFunc)
 {
 	XnStatus nRetVal = XN_STATUS_OK;
 	XnChar csTemp[XN_INI_MAX_LEN] = "";
 
-	*pFilteringType = XN_LOG_WRITE_NONE;
-
 	nRetVal = xnOSReadStringFromINI(cpINIFileName, cpSectionName, cpKey, csTemp, XN_INI_MAX_LEN);
 	if (nRetVal == XN_STATUS_OK)
 	{
-		if (strcmp(csTemp, XN_LOG_MASK_ALL) == 0)
-			*pFilteringType = XN_LOG_WRITE_ALL;
-		else if (csTemp[0] == '\0')	// empty
-			*pFilteringType = XN_LOG_WRITE_NONE;
-		else
-			*pFilteringType = XN_LOG_WRITE_MASKS;
+		nRetVal = xnLogSetMasks(csTemp, pSetMaskFunc);
+		XN_IS_STATUS_OK(nRetVal);
 	}
 
-	xnLogSetMasks(csTemp, pMasksHash);
+	return (XN_STATUS_OK);
 }
 
 XN_C_API XnStatus xnLogInitFromINIFile(const XnChar* cpINIFileName, const XnChar* cpSectionName)
@@ -238,30 +396,45 @@ XN_C_API XnStatus xnLogInitFromINIFile(const XnChar* cpINIFileName, const XnChar
 	XnStatus nRetVal = XN_STATUS_OK;
 	XnUInt32 nTemp;
 
-	xnLogReadMasksFromINI(cpINIFileName, cpSectionName, "LogMasks", &g_xnLoggerData.m_nLogFilteringType, &g_xnLoggerData.m_LogMasks);
-	xnLogReadMasksFromINI(cpINIFileName, cpSectionName, "DumpMasks", &g_xnLoggerData.m_nDumpFilteringType, &g_xnLoggerData.m_DumpMasks);
+	nRetVal = xnLogInitSystem();
+	XN_IS_STATUS_OK(nRetVal);
 
-	g_xnLoggerData.m_nFilterSeverity = XN_LOG_ERROR;
+	// read filters
+	xnLogReadMasksFromINI(cpINIFileName, cpSectionName, "LogMasks", xnLogBCSetMaskState);
+	xnLogReadMasksFromINI(cpINIFileName, cpSectionName, "DumpMasks", xnDumpSetMaskState);
+
+	LogData::GetInstance().SetMinSeverityGlobally(XN_LOG_SEVERITY_NONE);
+
 	nRetVal = xnOSReadIntFromINI(cpINIFileName, cpSectionName, "LogLevel", &nTemp);
 	if (nRetVal == XN_STATUS_OK)
-		g_xnLoggerData.m_nFilterSeverity = (XnLogSeverity)nTemp;
+	{
+		nRetVal = xnLogBCSetSeverityFilter((XnLogSeverity)nTemp);
+		XN_IS_STATUS_OK(nRetVal);
+	}
 
-	g_xnLoggerData.m_bWriteToConsole = FALSE;
+	// configure writers
 	nRetVal = xnOSReadIntFromINI(cpINIFileName, cpSectionName, "LogWriteToConsole", &nTemp);
 	if (nRetVal == XN_STATUS_OK)
-		g_xnLoggerData.m_bWriteToConsole = nTemp;
+	{
+		nRetVal = xnLogSetConsoleOutput(nTemp);
+		XN_IS_STATUS_OK(nRetVal);
+	}
 
-	g_xnLoggerData.m_bWriteToFile = TRUE;
 	nRetVal = xnOSReadIntFromINI(cpINIFileName, cpSectionName, "LogWriteToFile", &nTemp);
 	if (nRetVal == XN_STATUS_OK)
-		g_xnLoggerData.m_bWriteToFile = nTemp;
+	{
+		nRetVal = xnLogSetFileOutput(nTemp);
+		XN_IS_STATUS_OK(nRetVal);
+	}
 
-	g_xnLoggerData.m_bWriteLineInfo = TRUE;
 	nRetVal = xnOSReadIntFromINI(cpINIFileName, cpSectionName, "LogWriteLineInfo", &nTemp);
 	if (nRetVal == XN_STATUS_OK)
-		g_xnLoggerData.m_bWriteLineInfo = nTemp;
+	{
+		nRetVal = xnLogSetLineInfo(nTemp);
+		XN_IS_STATUS_OK(nRetVal);
+	}
 
-	return xnLogInitSystem();
+	return XN_STATUS_OK;
 }
 
 XN_C_API XnStatus xnLogInitFromXmlFile(const XnChar* strFileName)
@@ -281,9 +454,41 @@ XN_C_API XnStatus xnLogInitFromXmlFile(const XnChar* strFileName)
 		TiXmlElement* pLog = pRootElem->FirstChildElement("Log");
 		if (pLog != NULL)
 		{
-			// configure
 			XnBool bOn;
 
+			// configure filters
+			TiXmlElement* pLogLevel = pLog->FirstChildElement("LogLevel");
+			if (pLogLevel != NULL)
+			{
+				XnInt nValue;
+				nRetVal = xnXmlReadIntAttribute(pLogLevel, "value", &nValue);
+				XN_IS_STATUS_OK(nRetVal);
+
+				nRetVal = xnLogBCSetSeverityFilter((XnLogSeverity)nValue);
+				XN_IS_STATUS_OK(nRetVal);
+			}
+
+			TiXmlElement* pMasks = pLog->FirstChildElement("Masks");
+			if (pMasks != NULL)
+			{
+				TiXmlElement* pMask = pMasks->FirstChildElement("Mask");
+				while (pMask != NULL)
+				{
+					const XnChar* strName;
+					nRetVal = xnXmlReadStringAttribute(pMask, "name", &strName);
+					XN_IS_STATUS_OK(nRetVal);
+
+					nRetVal = xnXmlReadBoolAttribute(pMask, "on", &bOn);
+					XN_IS_STATUS_OK(nRetVal);
+
+					nRetVal = xnLogBCSetMaskState(strName, bOn);
+					XN_IS_STATUS_OK(nRetVal);
+
+					pMask = pMask->NextSiblingElement("Mask");
+				}
+			}
+
+			// configure writers
 			if (pLog->Attribute("writeToConsole"))
 			{
 				nRetVal = xnXmlReadBoolAttribute(pLog, "writeToConsole", &bOn);
@@ -309,36 +514,6 @@ XN_C_API XnStatus xnLogInitFromXmlFile(const XnChar* strFileName)
 
 				nRetVal = xnLogSetLineInfo(bOn);
 				XN_IS_STATUS_OK(nRetVal);
-			}
-			TiXmlElement* pLogLevel = pLog->FirstChildElement("LogLevel");
-			if (pLogLevel != NULL)
-			{
-				XnInt nValue;
-				nRetVal = xnXmlReadIntAttribute(pLogLevel, "value", &nValue);
-				XN_IS_STATUS_OK(nRetVal);
-
-				nRetVal = xnLogSetSeverityFilter((XnLogSeverity)nValue);
-				XN_IS_STATUS_OK(nRetVal);
-			}
-
-			TiXmlElement* pMasks = pLog->FirstChildElement("Masks");
-			if (pMasks != NULL)
-			{
-				TiXmlElement* pMask = pMasks->FirstChildElement("Mask");
-				while (pMask != NULL)
-				{
-					const XnChar* strName;
-					nRetVal = xnXmlReadStringAttribute(pMask, "name", &strName);
-					XN_IS_STATUS_OK(nRetVal);
-
-					nRetVal = xnXmlReadBoolAttribute(pMask, "on", &bOn);
-					XN_IS_STATUS_OK(nRetVal);
-
-					nRetVal = xnLogSetMaskState(strName, bOn);
-					XN_IS_STATUS_OK(nRetVal);
-
-					pMask = pMask->NextSiblingElement("Mask");
-				}
 			}
 
 			// Dumps
@@ -367,228 +542,398 @@ XN_C_API XnStatus xnLogInitFromXmlFile(const XnChar* strFileName)
 	return (XN_STATUS_OK);
 }
 
+XN_C_API XnStatus xnLogRegisterLogWriter(const XnLogWriter* pWriter)
+{
+	XnStatus nRetVal = XN_STATUS_OK;
+	
+	LogData& logData = LogData::GetInstance();
+	nRetVal = logData.writers.AddLast(pWriter);
+	XN_IS_STATUS_OK(nRetVal);
+
+	xnLogWriteBanner(pWriter);
+	
+	return (XN_STATUS_OK);
+}
+
+XN_C_API void xnLogUnregisterLogWriter(const XnLogWriter* pWriter)
+{
+	XnStatus nRetVal = XN_STATUS_OK;
+	
+	LogData& logData = LogData::GetInstance();
+	nRetVal = logData.writers.Remove(pWriter);
+	XN_ASSERT(nRetVal == XN_STATUS_OK);
+}
+
 XN_C_API XnStatus xnLogStartNewFile()
 {
-	g_xnLoggerData.CloseFile();
-	return xnLogInitSystem();
+	LogData& logData = LogData::GetInstance();
+	if (!logData.fileWriter.IsRegistered())
+	{
+		return XN_STATUS_INVALID_OPERATION;
+	}
+
+	logData.fileWriter.Unregister();
+	return logData.fileWriter.Register();
 }
 
 XN_C_API XnStatus xnLogClose()
 {
-	g_xnLoggerData.Reset();
+	// notify all writers (while allowing them to unregister themselves)
+	LogData& logData = LogData::GetInstance();
+	XnLogWritersList::ConstIterator it = logData.writers.begin();
+	while (it != logData.writers.end())
+	{
+		XnLogWritersList::ConstIterator curr = it;
+		++it;
+
+		const XnLogWriter* pWriter = *curr;
+		pWriter->OnClosing(pWriter->pCookie);
+	}
+
+	logData.strLogDir[0] = '\0';
+	logData.strSessionTimestamp[0] = '\0';
+	logData.pMasksHash->Clear();
+	logData.defaultMinSeverity = XN_LOG_SEVERITY_NONE;
+
+	// turn off all dumps
+	xnDumpSetMaskState(XN_LOG_MASK_ALL, FALSE);
 
 	return XN_STATUS_OK;
 }
 
-XN_C_API XnStatus xnLogSetMaskState(const XnChar* csMask, XnBool bEnabled)
-{
-	XnStatus nRetVal = XN_STATUS_OK;
-
-	if (strcmp(csMask, XN_LOG_MASK_ALL) == 0)
-	{
-		g_xnLoggerData.m_nLogFilteringType = bEnabled ? XN_LOG_WRITE_ALL : XN_LOG_WRITE_NONE;
-		xnLogConfigurationChanged();
-	}
-	else
-	{
-		g_xnLoggerData.m_nLogFilteringType = XN_LOG_WRITE_MASKS;
-
-		if (bEnabled)
-		{
-			nRetVal = g_xnLoggerData.m_LogMasks.Set(csMask, NULL);
-			XN_IS_STATUS_OK(nRetVal);
-		}
-		else
-		{
-			XnValue val = NULL;
-			nRetVal = g_xnLoggerData.m_LogMasks.Remove(csMask, val);
-			if (nRetVal != XN_STATUS_OK && nRetVal != XN_STATUS_NO_MATCH)
-			{
-				return (XN_STATUS_OK);
-			}
-		}
-	}
-
-	return (XN_STATUS_OK);
-}
-
-XN_C_API XnStatus xnDumpSetMaskState(const XnChar* csMask, XnBool bEnabled)
-{
-	XnStatus nRetVal = XN_STATUS_OK;
-
-	if (strcmp(csMask, XN_LOG_MASK_ALL) == 0)
-	{
-		g_xnLoggerData.m_nDumpFilteringType = bEnabled ? XN_LOG_WRITE_ALL : XN_LOG_WRITE_NONE;
-	}
-	else
-	{
-		g_xnLoggerData.m_nDumpFilteringType = XN_LOG_WRITE_MASKS;
-
-		if (bEnabled)
-		{
-			nRetVal = g_xnLoggerData.m_DumpMasks.Set(csMask, NULL);
-			XN_IS_STATUS_OK(nRetVal);
-		}
-		else
-		{
-			XnValue val = NULL;
-			nRetVal = g_xnLoggerData.m_DumpMasks.Remove(csMask, val);
-			if (nRetVal != XN_STATUS_OK && nRetVal != XN_STATUS_NO_MATCH)
-			{
-				return (XN_STATUS_OK);
-			}
-		}
-	}
-
-	return (XN_STATUS_OK);
-}
-
-XN_C_API XnStatus xnLogSetSeverityFilter(XnLogSeverity nMinSeverity)
-{
-	g_xnLoggerData.m_nFilterSeverity = nMinSeverity;
-	return (XN_STATUS_OK);
-}
-
 XN_C_API XnStatus xnLogSetConsoleOutput(XnBool bConsoleOutput)
 {
-	g_xnLoggerData.m_bWriteToConsole = bConsoleOutput;
-	return (XN_STATUS_OK);
+	XnStatus nRetVal = XN_STATUS_OK;
+
+	LogData& logData = LogData::GetInstance();
+	if (bConsoleOutput)
+	{
+		nRetVal = logData.consoleWriter.Register();
+		XN_IS_STATUS_OK(nRetVal);
+	}
+	else
+	{
+		logData.consoleWriter.Unregister();
+	}
+
+	return XN_STATUS_OK;
 }
 
 XN_C_API XnStatus xnLogSetFileOutput(XnBool bFileOutput)
 {
-	g_xnLoggerData.m_bWriteToFile = bFileOutput;
-	xnLogConfigurationChanged();
-	return (XN_STATUS_OK);
+	XnStatus nRetVal = XN_STATUS_OK;
+
+	LogData& logData = LogData::GetInstance();
+	if (bFileOutput)
+	{
+		nRetVal = logData.fileWriter.Register();
+		XN_IS_STATUS_OK(nRetVal);
+	}
+	else
+	{
+		logData.fileWriter.Unregister();
+	}
+
+	return XN_STATUS_OK;
 }
 
 XN_C_API XnStatus xnLogSetLineInfo(XnBool bLineInfo)
 {
-	g_xnLoggerData.m_bWriteLineInfo = bLineInfo;
-	xnLogConfigurationChanged();
+	LogData& logData = LogData::GetInstance();
+	logData.fileWriter.SetLineInfo(bLineInfo);
 	return (XN_STATUS_OK);
 }
 
 XN_C_API XnStatus xnLogSetOutputFolder(const XnChar* strOutputFolder)
 {
-	g_xnLoggerData.CloseFile();
-	sprintf(g_xnLoggerData.m_csLogDir, "%s%s", strOutputFolder, XN_FILE_DIR_SEP);
-	xnLogInitSystem();
+	XnStatus nRetVal = XN_STATUS_OK;
+	
+	// check if folder exists
+	XnBool bDirExists = FALSE;
+	nRetVal = xnOSDoesDirecotyExist(strOutputFolder, &bDirExists);
+	XN_IS_STATUS_OK(nRetVal);
+
+	if (!bDirExists)
+	{
+		// create it
+		nRetVal = xnOSCreateDirectory(strOutputFolder);
+		XN_IS_STATUS_OK(nRetVal);
+	}
+	
+	// place it in a temp buffer, just to make sure everything succeeds
+	XnChar strDirName[XN_FILE_MAX_PATH];
+	nRetVal = xnOSGetFullPathName(strOutputFolder, strDirName, XN_FILE_MAX_PATH);
+	XN_IS_STATUS_OK(nRetVal);
+
+	nRetVal = xnOSStrAppend(strDirName, XN_FILE_DIR_SEP, XN_FILE_MAX_PATH);
+	XN_IS_STATUS_OK(nRetVal);
+
+	// OK. replace
+	LogData& logData = LogData::GetInstance();
+	xnOSStrCopy(logData.strLogDir, strDirName, XN_FILE_MAX_PATH);
+
+	// restart file writer
+	xnLogStartNewFile();
+
 	return (XN_STATUS_OK);
 }
 
-XnBool xnLogIsMaskEnabledImpl(const XnChar* csLogMask)
+XnLogger* xnLogGetLoggerForMask(const XnChar* csLogMask, XnBool bCreate)
 {
-	XN_VALIDATE_INPUT_PTR(csLogMask);
-
-	switch (g_xnLoggerData.m_nLogFilteringType)
+	XnLogger* pLogger = NULL;
+	LogData& logData = LogData::GetInstance();
+	if (XN_STATUS_OK == logData.pMasksHash->Get(csLogMask, pLogger))
 	{
-	case XN_LOG_WRITE_ALL:
-		return TRUE;
-	case XN_LOG_WRITE_NONE:
-		return FALSE;
-	case XN_LOG_WRITE_MASKS:
+		return pLogger;
+	}
+	else if (bCreate)
+	{
+		XnLogger logger;
+		logger.nMinSeverity = logData.defaultMinSeverity;
+
+		// first of all, add it to the map
+		if (XN_STATUS_OK != logData.pMasksHash->Set(csLogMask, logger))
 		{
-			XnStringsHash::Iterator it = g_xnLoggerData.m_LogMasks.end();
-			return (XN_STATUS_OK == g_xnLoggerData.m_LogMasks.Find(csLogMask, it));
+			// failed to add it to the map
+			XN_ASSERT(FALSE);
+			return NULL;
 		}
-	default:
-		printf("Log: Unknown filter type: %d", g_xnLoggerData.m_nLogFilteringType);
+
+		// now find it in the map
+		XnLogMasksHash::Iterator it = logData.pMasksHash->end();
+		if (XN_STATUS_OK != logData.pMasksHash->Find(csLogMask, it))
+		{
+			XN_ASSERT(FALSE);
+			return NULL;
+		}
+
+		it.Value().pInternal = (void*)it.Key();
+
+		return &it.Value();
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+void xnLogWriteNoEntryImplV(const XnChar* csFormat, va_list args)
+{
+	const XnUInt32 nMaxMessageSize = 1024;
+	XnChar csMessage[nMaxMessageSize+1];
+	XnUInt32 nChars;
+	xnOSStrFormatV(csMessage, nMaxMessageSize, &nChars, csFormat, args);
+
+	LogData& logData = LogData::GetInstance();
+	for (XnLogWritersList::ConstIterator it = logData.writers.begin(); it != logData.writers.end(); ++it)
+	{
+		const XnLogWriter* pWriter = *it;
+		pWriter->WriteUnformatted(csMessage, pWriter->pCookie);
+	}
+}
+
+void xnLogWriteBinaryDataImplV(const XnChar* strMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, XnUChar* pBinData, XnUInt32 nDataSize, const XnChar* csFormat, va_list args)
+{
+	// first write preceding message:
+	xnLogWriteImplV(strMask, nSeverity, csFile, nLine, csFormat, args);
+
+	// now write binary data (in lines of 16 bytes)
+	XnChar csLine[256];
+	XnUInt32 pos = 0;
+
+	for (XnUInt32 i = 0; i < nDataSize; ++i)
+	{
+		if ((i % 16) == 0) // first byte in line
+		{
+			// start a new line
+			pos = sprintf(csLine, "%6u: ", i);
+		}
+
+		pos += sprintf(csLine + pos, "%02x ", pBinData[i]);
+
+		if ((i % 16) == 15 || (i == nDataSize-1)) // last byte in line
+		{
+			xnLogWriteImpl(strMask, nSeverity, csFile, nLine, "%s", csLine);
+		}
+	}
+}
+
+XN_C_API XnStatus XN_C_DECL xnLogSetMaskMinSeverity(const XnChar* strMask, XnLogSeverity minSeverity)
+{
+	LogData& logData = LogData::GetInstance();
+	if (strcmp(strMask, XN_LOG_MASK_ALL) == 0)
+	{
+		logData.SetMinSeverityGlobally(minSeverity);
+	}
+	else
+	{
+		XnLogger* pLogger = xnLogGetLoggerForMask(strMask, TRUE);
+		if (pLogger == NULL)
+		{
+			XN_ASSERT(FALSE);
+			return XN_STATUS_ERROR;
+		}
+
+		pLogger->nMinSeverity = minSeverity;
+	}
+
+	return (XN_STATUS_OK);
+}
+
+XN_C_API XnLogSeverity XN_C_DECL xnLogGetMaskMinSeverity(const XnChar* strMask)
+{
+	XnLogger* pLogger = xnLogGetLoggerForMask(strMask, FALSE);
+	if (pLogger == NULL)
+	{
+		LogData& logData = LogData::GetInstance();
+		return logData.defaultMinSeverity;
+	}
+	else
+	{
+		return pLogger->nMinSeverity;
+	}
+}
+
+XN_C_API XnLogger* XN_C_DECL xnLoggerOpen(const XnChar* strMask)
+{
+	return xnLogGetLoggerForMask(strMask, TRUE);
+}
+
+XN_C_API void XN_C_DECL xnLoggerWrite(XnLogger* pLogger, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, ...)
+{
+	if (!xnLoggerIsEnabled(pLogger, nSeverity))
+		return;
+
+	const XnChar* strMask = (const XnChar*)pLogger->pInternal;
+
+	// write message
+	va_list args;
+	va_start(args, csFormat);
+	xnLogWriteImplV(strMask, nSeverity, csFile, nLine, csFormat, args);
+	va_end(args);
+}
+
+XN_C_API void XN_C_DECL xnLoggerWriteNoEntry(XnLogger* pLogger, XnLogSeverity nSeverity, const XnChar* csFormat, ...)
+{
+	if (!xnLoggerIsEnabled(pLogger, nSeverity))
+		return;
+
+	va_list args;
+	va_start(args, csFormat);
+	xnLogWriteNoEntryImplV(csFormat, args);
+	va_end(args);
+}
+
+XN_C_API void XN_C_DECL xnLoggerWriteBinaryData(XnLogger* pLogger, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, XnUChar* pBinData, XnUInt32 nDataSize, const XnChar* csFormat, ...)
+{
+	if (!xnLoggerIsEnabled(pLogger, nSeverity))
+		return;
+
+	const XnChar* strMask = (const XnChar*)pLogger->pInternal;
+
+	va_list args;
+	va_start(args, csFormat);
+	xnLogWriteBinaryDataImplV(strMask, nSeverity, csFile, nLine, pBinData, nDataSize, csFormat, args);
+	va_end(args);
+}
+
+XN_C_API void XN_C_DECL _xnLoggerClose(XnLogger* pLogger)
+{
+	if (pLogger == NULL)
+	{
+		return;
+	}
+
+	const XnChar* strMask = (const XnChar*)pLogger->pInternal;
+	LogData& logData = LogData::GetInstance();
+	logData.pMasksHash->Remove(strMask);
+}
+
+XN_C_API XnBool XN_C_DECL xnLoggerIsEnabled(XnLogger* pLogger, XnLogSeverity severity)
+{
+	if (pLogger == NULL)
+	{
 		return FALSE;
 	}
+	else
+	{
+		return (severity >= pLogger->nMinSeverity);
+	}
+}
+
+#ifndef __XN_NO_BC__
+
+//---------------------------------------------------------------------------
+// Backwards-Compatibility Code
+//---------------------------------------------------------------------------
+
+// Note: in old log implementation, you could first set global min severity, and
+// then turn on/off masks. To achieve the same behavior, a BC "turned-off" mask
+// will have the MSB turned on, so that it has a very high min severity, and nothing
+// will be output.
+#define XN_LOG_BC_MASK_OFF_FLAG		(1 << 30)
+
+static XnLogSeverity xnLogBCCalcSeverityByState(XnLogSeverity severity, XnBool bEnabled)
+{
+	if (bEnabled)
+	{
+		return XnLogSeverity(severity & ~XN_LOG_BC_MASK_OFF_FLAG);
+	}
+	else
+	{
+		return XnLogSeverity(severity | XN_LOG_BC_MASK_OFF_FLAG);
+	}
+}
+
+static XnStatus xnLogBCSetMaskState(const XnChar* strMask, XnBool bEnabled)
+{
+	LogData& logData = LogData::GetInstance();
+	if (strcmp(strMask, XN_LOG_MASK_ALL) == 0)
+	{
+		XnLogSeverity newGlobalSeverity = xnLogBCCalcSeverityByState(logData.defaultMinSeverity, bEnabled);
+		logData.SetMinSeverityGlobally(newGlobalSeverity);
+	}
+	else
+	{
+		XnLogger* pLogger = xnLogGetLoggerForMask(strMask, TRUE);
+		if (pLogger == NULL)
+		{
+			XN_ASSERT(FALSE);
+			return XN_STATUS_ERROR;
+		}
+
+		pLogger->nMinSeverity = xnLogBCCalcSeverityByState(pLogger->nMinSeverity, bEnabled);
+	}
+
+	return (XN_STATUS_OK);
+}
+
+static XnStatus xnLogBCSetSeverityFilter(XnLogSeverity nMinSeverity)
+{
+	LogData& logData = LogData::GetInstance();
+	if ((logData.defaultMinSeverity & XN_LOG_BC_MASK_OFF_FLAG) != 0)
+	{
+		nMinSeverity = XnLogSeverity(nMinSeverity | XN_LOG_BC_MASK_OFF_FLAG);
+	}
+
+	logData.SetMinSeverityGlobally(nMinSeverity);
+	xnLogFilterChanged();
+	return (XN_STATUS_OK);
 }
 
 XN_C_API XnBool xnLogIsEnabled(const XnChar* csLogMask, XnLogSeverity nSeverity)
 {
-	// check severity
-	if (nSeverity < g_xnLoggerData.m_nFilterSeverity)
-		return FALSE;
-
-	// check filtering policy
-	if (!xnLogIsMaskEnabledImpl(csLogMask))
-		return FALSE;
-
-	return TRUE;
-}
-
-const XnChar* xnLogGetSeverityString(XnLogSeverity nSeverity)
-{
-	switch (nSeverity)
+	XnLogger* pLogger = xnLogGetLoggerForMask(csLogMask, FALSE);
+	if (pLogger == NULL)
 	{
-	case XN_LOG_VERBOSE:
-		return "VERBOSE";
-	case XN_LOG_INFO:
-		return "INFO";
-	case XN_LOG_WARNING:
-		return "WARNING";
-	case XN_LOG_ERROR:
-		return "ERROR";
-	default:
-		return "UNKNOWN";
+		// no such logger exists. Mask uses default severity
+		LogData& logData = LogData::GetInstance();
+		return (nSeverity >= logData.defaultMinSeverity);
 	}
-}
-
-void xnLogWriteImplV(const XnChar* /*csLogMask*/, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, va_list args)
-{
-	if (!g_xnLoggerData.m_bWriteToFile && !g_xnLoggerData.m_bWriteToConsole)
+	else
 	{
-		//Nothing to do - don't waste time formatting anything.
-		return;
+		return (nSeverity >= pLogger->nMinSeverity);
 	}
-
-	// take time
-	XnUInt64 nNow;
-	xnOSGetHighResTimeStamp(&nNow);
-
-	// write timestamp and severity
-	const XnChar* csSeverity = xnLogGetSeverityString(nSeverity);
-
-	const XnUInt32 nMaxMessageSize = 2047;
-	XnChar csMessage[nMaxMessageSize+1];
-	XnUInt32 nChars = 0;
-	XnUInt32 nMessageLen = 0;
-
-	// write timestamp
-	xnOSStrFormat(csMessage + nMessageLen, nMaxMessageSize - nMessageLen, &nChars, "%8llu\t[%s]\t", nNow, csSeverity);
-	nMessageLen += nChars;
-
-	XnUInt32 nLineInfoBegin = nMessageLen;
-
-	if (g_xnLoggerData.m_bWriteLineInfo)
-	{
-		// write line info
-		XnChar fileName[XN_FILE_MAX_PATH];
-		XnStatus nRetVal = xnOSGetFileName(csFile, fileName, sizeof(fileName));
-		if (nRetVal == XN_STATUS_OK)
-		{
-			xnOSStrFormat(csMessage + nMessageLen, nMaxMessageSize - nMessageLen, &nChars, "%s\t%d\t", fileName, nLine);
-			nMessageLen += nChars;
-		}
-	}
-
-	XnUInt32 nLineInfoEnd = nMessageLen;
-
-	// write message
-	xnOSStrFormatV(csMessage + nMessageLen, nMaxMessageSize - nMessageLen, &nChars, csFormat, args);
-	nMessageLen += nChars;
-	XnUInt32 nUserMsgLen = nChars;
-
-	// write end-of-line
-	xnOSStrFormat(csMessage + nMessageLen, nMaxMessageSize - nMessageLen, &nChars, XN_NEW_LINE_SEP);
-	nMessageLen += nChars;
-
-	if (g_xnLoggerData.m_bWriteToFile)
-	{
-		xnOSWriteFile(g_xnLoggerData.m_fLogFile, csMessage, nMessageLen);
-	}
-
-	if (g_xnLoggerData.m_bWriteToConsole)
-	{
-		//Write to console without line info
-		//'%.*s' causes the first (nLineInfoBegin) characters of csMessage to be printed.
-		printf("%.*s%s", nLineInfoBegin, csMessage, csMessage + nLineInfoEnd);
-	}
-
 }
 
 XN_C_API void xnLogWrite(const XnChar* csLogMask, XnLogSeverity nSeverity, const XnChar* csFile, XnUInt32 nLine, const XnChar* csFormat, ...)
@@ -608,27 +953,21 @@ XN_C_API void xnLogWriteNoEntry(const XnChar* csLogMask, XnLogSeverity nSeverity
 	if (!xnLogIsEnabled(csLogMask, nSeverity))
 		return;
 
-	if (g_xnLoggerData.m_bWriteToFile)
+	va_list args;
+	va_start(args, csFormat);
+
+	const XnUInt32 nMaxMessageSize = 1024;
+	XnChar csMessage[nMaxMessageSize+1];
+	XnUInt32 nChars;
+	xnOSStrFormatV(csMessage, nMaxMessageSize, &nChars, csFormat, args);
+
+	va_end(args);
+
+	LogData& logData = LogData::GetInstance();
+	for (XnLogWritersList::ConstIterator it = logData.writers.begin(); it != logData.writers.end(); ++it)
 	{
-		va_list args;
-		va_start(args, csFormat);
-
-		const XnUInt32 nMaxMessageSize = 1024;
-		XnChar csMessage[nMaxMessageSize+1];
-		XnUInt32 nChars;
-		xnOSStrFormatV(csMessage, nMaxMessageSize, &nChars, csFormat, args);
-
-		va_end(args);
-
-		xnOSWriteFile(g_xnLoggerData.m_fLogFile, csMessage, nChars);
-	}
-
-	if (g_xnLoggerData.m_bWriteToConsole)
-	{
-		va_list args;
-		va_start(args, csFormat);
-		vprintf(csFormat, args);
-		va_end(args);
+		const XnLogWriter* pWriter = *it;
+		pWriter->WriteUnformatted(csMessage, pWriter->pCookie);
 	}
 }
 
@@ -664,120 +1003,14 @@ XN_C_API void xnLogWriteBinaryData(const XnChar* csLogMask, XnLogSeverity nSever
 	}
 }
 
-XnBool xnLogIsDumpMaskEnabled(const XnChar* csDumpMask)
+XN_C_API XnStatus xnLogSetMaskState(const XnChar* csMask, XnBool bEnabled)
 {
-	XN_VALIDATE_INPUT_PTR(csDumpMask);
-
-	switch (g_xnLoggerData.m_nDumpFilteringType)
-	{
-	case XN_LOG_WRITE_ALL:
-		return TRUE;
-	case XN_LOG_WRITE_NONE:
-		return FALSE;
-	case XN_LOG_WRITE_MASKS:
-		{
-			XnStringsHash::Iterator it = g_xnLoggerData.m_DumpMasks.end();
-			return (XN_STATUS_OK == g_xnLoggerData.m_DumpMasks.Find(csDumpMask, it));
-		}
-	default:
-		printf("Log: Unknown filter type: %d", g_xnLoggerData.m_nDumpFilteringType);
-		return FALSE;
-	}
+	return xnLogBCSetMaskState(csMask, bEnabled);
 }
 
-void xnDumpCreateFileNameImpl(XnChar* csFullFileName, const XnChar* csFileNameFormat, va_list args)
+XN_C_API XnStatus xnLogSetSeverityFilter(XnLogSeverity nMinSeverity)
 {
-	XnChar csFileName[XN_FILE_MAX_PATH];
-	vsprintf(csFileName, csFileNameFormat, args);
-
-	XN_PROCESS_ID nProcID = 0;
-	xnOSGetCurrentProcessID(&nProcID);
-
-	XnUInt32 nBytesWritten;
-	xnOSStrFormat(csFullFileName, XN_FILE_MAX_PATH, &nBytesWritten, "%s%s_%d.%s", g_xnLoggerData.m_csLogDir, g_xnLoggerData.m_csTime, nProcID, csFileName);
+	return xnLogBCSetSeverityFilter(nMinSeverity);
 }
 
-void xnDumpCreate(XnDump* pDump, const XnChar* csHeader, const XnChar* csFileNameFormat, va_list args)
-{
-	XnChar strFileName[XN_FILE_MAX_PATH];
-	xnDumpCreateFileNameImpl(strFileName, csFileNameFormat, args);
-
-	if (XN_STATUS_OK != xnLogCreateFile(strFileName, &pDump->hFile))
-	{
-		// we don't have much to do if files can't be open. Dump will not be written
-		xnLogWarning(XN_MASK_LOG, "Couldn't create dump file %s! Dump will not be written", strFileName);
-	}
-
-	if (csHeader != NULL)
-	{
-		xnDumpWriteStringImpl(*pDump, csHeader);
-	}
-}
-
-XN_C_API void xnDumpInit(XnDump* pDump, const XnChar* csDumpMask, const XnChar* csHeader, const XnChar* csFileNameFormat, ...)
-{
-	if (pDump->hFile == XN_INVALID_FILE_HANDLE && xnLogIsDumpMaskEnabled(csDumpMask))
-	{
-		va_list args;
-		va_start(args, csFileNameFormat);
-		xnDumpCreate(pDump, csHeader, csFileNameFormat, args);
-		va_end(args);
-	}
-}
-
-XN_C_API void xnDumpForceInit(XnDump* pDump, const XnChar* csHeader, const XnChar* csFileNameFormat, ...)
-{
-	if (pDump->hFile == XN_INVALID_FILE_HANDLE)
-	{
-		va_list args;
-		va_start(args, csFileNameFormat);
-		xnDumpCreate(pDump, csHeader, csFileNameFormat, args);
-		va_end(args);
-	}
-}
-
-XN_C_API void xnDumpClose(XnDump* pDump)
-{
-	if (pDump->hFile != XN_INVALID_FILE_HANDLE)
-	{
-		xnOSCloseFile(&pDump->hFile);
-		*pDump = XN_DUMP_CLOSED;
-	}
-}
-
-XN_C_API void xnDumpWriteBufferImpl(XnDump dump, const void* pBuffer, XnUInt32 nBufferSize)
-{
-	if (dump.hFile != XN_INVALID_FILE_HANDLE) 
-	{
-		xnOSWriteFile(dump.hFile, pBuffer, nBufferSize);
-	}
-}
-
-XN_C_API void xnDumpWriteStringImpl(XnDump dump, const XnChar* csFormat, ...)
-{
-	if (dump.hFile != XN_INVALID_FILE_HANDLE)
-	{
-		const XnUInt32 nStringLength = 1024;
-		XnChar csString[1024];
-
-		va_list args;
-		va_start(args, csFormat);
-
-		// format message
-		XnUInt32 nChars;
-		xnOSStrFormatV(csString, nStringLength, &nChars, csFormat, args);
-
-		// and write it to file
-		xnOSWriteFile(dump.hFile, csString, nChars);
-
-		va_end(args);
-	}
-}
-
-XN_C_API void xnDumpFlush(XnDump dump)
-{
-	if (dump.hFile != XN_INVALID_FILE_HANDLE)
-	{
-		xnOSFlushFile(dump.hFile);
-	}
-}
+#endif // #ifndef __XN_NO_BC__

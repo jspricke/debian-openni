@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -214,7 +214,6 @@ void closeSample(int errCode)
 {
 	captureStop(0);
 	closeDevice();
-	g_Context.Shutdown();
 
 	if (errCode != ERR_OK)
 	{

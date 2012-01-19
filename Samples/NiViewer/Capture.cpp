@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -189,12 +189,10 @@ bool captureOpenWriteDevice()
 	START_CAPTURE_CHECK_RC(nRetVal, "Enumerate recorders");
 	// take first
 	NodeInfo chosen = *recordersList.Begin();
-	nRetVal = g_Context.CreateProductionTree(chosen);
-	START_CAPTURE_CHECK_RC(nRetVal, "Create recorder");
 
 	g_Capture.pRecorder = new Recorder;
-	nRetVal = chosen.GetInstance(*g_Capture.pRecorder);
-	START_CAPTURE_CHECK_RC(nRetVal, "Get recorder instance");
+	nRetVal = g_Context.CreateProductionTree(chosen, *g_Capture.pRecorder);
+	START_CAPTURE_CHECK_RC(nRetVal, "Create recorder");
 
 	nRetVal = g_Capture.pRecorder->SetDestination(XN_RECORD_MEDIUM_FILE, g_Capture.csFileName);
 	START_CAPTURE_CHECK_RC(nRetVal, "Set output file");
@@ -219,7 +217,6 @@ void captureBrowse(int)
 	ofn.lpstrFile = g_Capture.csFileName;
 	ofn.nMaxFile = sizeof(g_Capture.csFileName);
 	ofn.lpstrTitle = TEXT("Capture to...");
-	ofn.nMaxFileTitle = sizeof (ofn.lpstrTitle);
 	ofn.Flags = OFN_EXPLORER | OFN_NOCHANGEDIR;
 
 	GetSaveFileName(&ofn); 

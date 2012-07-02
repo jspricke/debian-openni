@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -23,6 +23,7 @@
 // Includes
 //---------------------------------------------------------------------------
 #include <XnOS.h>
+#include <XnLog.h>
 
 //---------------------------------------------------------------------------
 // Globals
@@ -228,7 +229,6 @@ XN_C_API XnStatus xnOSStrNCRC32(XnUChar* cpBuffer, XnUInt32 nBufferSize, XnUInt3
 {
 	// Local function variables
 	XnUInt32 nTempCRC32 = 0xffffffff;
-	XnUInt32 nStrLen = 0;
 	XnUInt32 nIdx = 0;
 
 	// Validate the input/output pointers (to make sure none of them is NULL)
@@ -262,7 +262,7 @@ XN_C_API XnStatus xnOSStrFormatV(XnChar* cpDestString, const XnUInt32 nDestLengt
 	// nRes is the number of bytes written, not including NULL termination
 
 	if ((nRes == -1) ||	// string was truncated
-		(nRes == nDestLength && cpDestString[nRes] != '\0')) // no space for the NULL termination
+		(nRes == (XnInt32)nDestLength && cpDestString[nRes] != '\0')) // no space for the NULL termination
 	{
 		return (XN_STATUS_INTERNAL_BUFFER_TOO_SMALL);
 	}
@@ -279,14 +279,53 @@ XN_C_API void xnOSItoA(XnInt32 nValue, XnChar* cpStr, XnInt32 nBase)
 	_itoa(nValue, cpStr, nBase);
 }
 
-XN_C_API XnStatus xnOSExpandEnvironmentStrings(const XnChar* strSrc, XnChar* strDest, XnUInt32 nDestSize)
+XN_C_API XnStatus XN_C_DECL xnOSGetEnvironmentVariable(const XnChar* strEnv, XnChar* strDest, XnUInt32 nDestSize)
 {
-	if (0 == ::ExpandEnvironmentStrings(strSrc, strDest, nDestSize))
+	XN_VALIDATE_INPUT_PTR(strEnv);
+	XN_VALIDATE_INPUT_PTR(strDest);
+	
+	DWORD ret = ::GetEnvironmentVariable(strEnv, strDest, nDestSize);
+	if (ret > nDestSize)
 	{
 		return (XN_STATUS_OUTPUT_BUFFER_OVERFLOW);
 	}
+	else if (ret == 0)
+	{
+		if (ERROR_ENVVAR_NOT_FOUND == GetLastError())
+		{
+			return (XN_STATUS_OS_ENV_VAR_NOT_FOUND);
+		}
+		else
+		{
+			xnLogWarning(XN_MASK_OS, "Could not get environment variable (%d)", GetLastError());
+			return (XN_STATUS_ERROR);
+		}
+	}
+	else
+	{
+		return (XN_STATUS_OK);
+	}
+}
 
-	return (XN_STATUS_OK);
+XN_C_API XnStatus xnOSExpandEnvironmentStrings(const XnChar* strSrc, XnChar* strDest, XnUInt32 nDestSize)
+{
+	XN_VALIDATE_INPUT_PTR(strSrc);
+	XN_VALIDATE_INPUT_PTR(strDest);
+	
+	DWORD ret = ::ExpandEnvironmentStrings(strSrc, strDest, nDestSize);
+	if (ret > nDestSize)
+	{
+		return (XN_STATUS_OUTPUT_BUFFER_OVERFLOW);
+	}
+	else if (ret == 0)
+	{
+		xnLogWarning(XN_MASK_OS, "Could not expand environment variables (%d)", GetLastError());
+		return (XN_STATUS_ERROR);
+	}
+	else
+	{
+		return (XN_STATUS_OK);
+	}
 }
 
 XN_C_API XnInt32 xnOSStrCmp(const XnChar* cpFirstString, const XnChar* cpSecondString)

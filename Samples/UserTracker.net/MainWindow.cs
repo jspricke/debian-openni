@@ -1,3 +1,24 @@
+/****************************************************************************
+*                                                                           *
+*  OpenNI 1.x Alpha                                                         *
+*  Copyright (C) 2011 PrimeSense Ltd.                                       *
+*                                                                           *
+*  This file is part of OpenNI.                                             *
+*                                                                           *
+*  OpenNI is free software: you can redistribute it and/or modify           *
+*  it under the terms of the GNU Lesser General Public License as published *
+*  by the Free Software Foundation, either version 3 of the License, or     *
+*  (at your option) any later version.                                      *
+*                                                                           *
+*  OpenNI is distributed in the hope that it will be useful,                *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+*  GNU Lesser General Public License for more details.                      *
+*                                                                           *
+*  You should have received a copy of the GNU Lesser General Public License *
+*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
+*                                                                           *
+****************************************************************************/
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,7 +38,7 @@ namespace UserTracker.net
 		{
 			InitializeComponent();
 
-			this.context = new Context(SAMPLE_XML_FILE);
+			this.context = Context.CreateFromXmlFile(SAMPLE_XML_FILE, out scriptNode);
 			this.depth = context.FindExistingNode(NodeType.Depth) as DepthGenerator;
 			if (this.depth == null)
 			{
@@ -32,7 +53,7 @@ namespace UserTracker.net
             this.userGenerator.NewUser += userGenerator_NewUser;
             this.userGenerator.LostUser += userGenerator_LostUser;
             this.poseDetectionCapability.PoseDetected += poseDetectionCapability_PoseDetected;
-            this.skeletonCapbility.CalibrationEnd += skeletonCapbility_CalibrationEnd;
+            this.skeletonCapbility.CalibrationComplete += skeletonCapbility_CalibrationComplete;
 
             this.skeletonCapbility.SetSkeletonProfile(SkeletonProfile.All);
             this.joints = new Dictionary<int,Dictionary<SkeletonJoint,SkeletonJointPosition>>();
@@ -49,16 +70,23 @@ namespace UserTracker.net
 			this.readerThread.Start();
 		}
 
-        void skeletonCapbility_CalibrationEnd(object sender, CalibrationEndEventArgs e)
+        void skeletonCapbility_CalibrationComplete(object sender, CalibrationProgressEventArgs e)
         {
-            if (e.Success)
+            if (e.Status == CalibrationStatus.OK)
             {
                 this.skeletonCapbility.StartTracking(e.ID);
                 this.joints.Add(e.ID, new Dictionary<SkeletonJoint, SkeletonJointPosition>());
             }
-            else
+            else if (e.Status != CalibrationStatus.ManualAbort)
             {
-                this.poseDetectionCapability.StartPoseDetection(calibPose, e.ID);
+                if (this.skeletonCapbility.DoesNeedPoseForCalibration)
+                {
+                    this.poseDetectionCapability.StartPoseDetection(calibPose, e.ID);
+                }
+                else
+                {
+                    this.skeletonCapbility.RequestCalibration(e.ID, true);
+                }
             }
         }
 
@@ -70,7 +98,14 @@ namespace UserTracker.net
 
         void userGenerator_NewUser(object sender, NewUserEventArgs e)
         {
-            this.poseDetectionCapability.StartPoseDetection(this.calibPose, e.ID);
+            if (this.skeletonCapbility.DoesNeedPoseForCalibration)
+            {
+                this.poseDetectionCapability.StartPoseDetection(this.calibPose, e.ID);
+            }
+            else
+            {
+                this.skeletonCapbility.RequestCalibration(e.ID, true);
+            }
         }
 
 		void userGenerator_LostUser(object sender, UserLostEventArgs e)
@@ -348,6 +383,7 @@ namespace UserTracker.net
 		private readonly string SAMPLE_XML_FILE = @"../../../../Data/SamplesConfig.xml";
 
 		private Context context;
+		private ScriptNode scriptNode;
 		private DepthGenerator depth;
         private UserGenerator userGenerator;
         private SkeletonCapability skeletonCapbility;

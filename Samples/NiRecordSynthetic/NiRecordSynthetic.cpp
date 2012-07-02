@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -87,12 +87,9 @@ int main(int argc, char* argv[])
 	CHECK_RC(nRetVal, "Init");
 
 	// open input file
-	nRetVal = context.OpenFileRecording(strInputFile);
-	CHECK_RC(nRetVal, "Open input file");
-
 	Player player;
-	nRetVal = context.FindExistingNode(XN_NODE_TYPE_PLAYER, player);
-	CHECK_RC(nRetVal, "Get player node");
+	nRetVal = context.OpenFileRecording(strInputFile, player);
+	CHECK_RC(nRetVal, "Open input file");
 
 	// Get depth node from recording
 	DepthGenerator depth;
@@ -157,9 +154,6 @@ int main(int argc, char* argv[])
 	}
 
 	printf("\n");
-
-	recorder.Release();
-	context.Shutdown();
 
 	return 0;
 }

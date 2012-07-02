@@ -1,6 +1,28 @@
+/****************************************************************************
+*                                                                           *
+*  OpenNI 1.x Alpha                                                         *
+*  Copyright (C) 2011 PrimeSense Ltd.                                       *
+*                                                                           *
+*  This file is part of OpenNI.                                             *
+*                                                                           *
+*  OpenNI is free software: you can redistribute it and/or modify           *
+*  it under the terms of the GNU Lesser General Public License as published *
+*  by the Free Software Foundation, either version 3 of the License, or     *
+*  (at your option) any later version.                                      *
+*                                                                           *
+*  OpenNI is distributed in the hope that it will be useful,                *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+*  GNU Lesser General Public License for more details.                      *
+*                                                                           *
+*  You should have received a copy of the GNU Lesser General Public License *
+*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
+*                                                                           *
+****************************************************************************/
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace OpenNI
 {
@@ -25,7 +47,9 @@ namespace OpenNI
 		{
 			get
 			{
-				return SafeNativeMethods.xnNodeInfoGetDescription(this.InternalObject);
+                IntPtr pDescription = SafeNativeMethods.xnNodeInfoGetDescription(this.InternalObject);
+                ProductionNodeDescription description = ProductionNodeDescription.Empty;
+                return (ProductionNodeDescription)Marshal.PtrToStructure(pDescription, typeof(ProductionNodeDescription));
 			}
 		}
 
@@ -62,13 +86,26 @@ namespace OpenNI
 		{
 			get
 			{
-				IntPtr handle = SafeNativeMethods.xnNodeInfoGetHandle(this.InternalObject);
+				IntPtr handle = SafeNativeMethods.xnNodeInfoGetRefHandle(this.InternalObject);
 				if (handle == IntPtr.Zero)
 					return null;
 				else
-					return ProductionNode.FromNative(handle);
+				{
+					ProductionNode result = ProductionNode.FromNative(handle);
+					SafeNativeMethods.xnProductionNodeRelease(handle);
+					return result;
+				}
 			}
 		}
+
+        public override string ToString()
+        {
+            const int size = 4096;
+            StringBuilder sb = new StringBuilder(size);
+            int status = SafeNativeMethods.xnNodeInfoGetTreeStringRepresentation(this.InternalObject, sb, size);
+            WrapperUtils.ThrowOnError(status);
+            return sb.ToString();
+        }
 
 		protected override void FreeObject(IntPtr ptr, bool disposing)
 		{

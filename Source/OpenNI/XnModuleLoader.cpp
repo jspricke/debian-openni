@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -30,6 +30,7 @@
 #include "XnTypeManager.h"
 #include <XnArray.h>
 #include <XnAlgorithms.h>
+#include "xnInternalFuncs.h"
 
 #if !XN_PLATFORM_SUPPORTS_DYNAMIC_LIBS
 #include <XnModuleCFunctions.h>
@@ -52,14 +53,13 @@
 	}
 
 #define XN_VALIDATE_CAPABILITY_STRUCT(name, pStruct)	\
-	do													\
 	{													\
 		XnStatus nTempRetVal = ValidateFunctionGroup(	\
 			XN_STRINGIFY(name),							\
 			(void**)pStruct,							\
 			sizeof(*pStruct)/sizeof(void*));			\
 		XN_IS_STATUS_OK(nTempRetVal);					\
-	} while (0)
+	}
 
 #define XN_VALIDATE_CAPABILITY(pInterface, name)												\
 	XN_VALIDATE_CAPABILITY_STRUCT(name, pInterface->p##name##Interface)
@@ -71,24 +71,24 @@ static XnVersion EXTENSIONS_VERSION = { 1, 1, 0, 0 };
 
 typedef const void* (XN_CALLBACK_TYPE* GetDataPrototype)(XnModuleNodeHandle hGenerator);
 
-static const void* XN_CALLBACK_TYPE GetDataNull(XnModuleNodeHandle hGenerator)
+static const void* XN_CALLBACK_TYPE GetDataNull(XnModuleNodeHandle /*hGenerator*/)
 {
 	return NULL;
 }
 
 typedef XnUInt32 (XN_CALLBACK_TYPE* GetBytesPerPixelPrototype)(XnModuleNodeHandle hGenerator);
 
-static XnUInt32 XN_CALLBACK_TYPE GetDepthBytesPerPixel(XnModuleNodeHandle hNode)
+static XnUInt32 XN_CALLBACK_TYPE GetDepthBytesPerPixel(XnModuleNodeHandle /*hNode*/)
 {
 	return sizeof(XnDepthPixel);
 }
 
-static XnUInt32 XN_CALLBACK_TYPE GetIRBytesPerPixel(XnModuleNodeHandle hNode)
+static XnUInt32 XN_CALLBACK_TYPE GetIRBytesPerPixel(XnModuleNodeHandle /*hNode*/)
 {
 	return sizeof(XnIRPixel);
 }
 
-static XnUInt32 XN_CALLBACK_TYPE GetSceneBytesPerPixel(XnModuleNodeHandle hNode)
+static XnUInt32 XN_CALLBACK_TYPE GetSceneBytesPerPixel(XnModuleNodeHandle /*hNode*/)
 {
 	return sizeof(XnLabel);
 }
@@ -141,23 +141,11 @@ XnStatus resolveModulesFile(XnChar* strFileName, XnUInt32 nBufSize)
 {
 	XnStatus nRetVal = XN_STATUS_OK;
 
-#if (XN_PLATFORM == XN_PLATFORM_WIN32)
-	#ifdef _M_X64
-		nRetVal = xnOSExpandEnvironmentStrings("%OPEN_NI_INSTALL_PATH64%\\Data\\modules.xml", strFileName, nBufSize);
-		XN_IS_STATUS_OK(nRetVal);
-	#else
-		nRetVal = xnOSExpandEnvironmentStrings("%OPEN_NI_INSTALL_PATH%\\Data\\modules.xml", strFileName, nBufSize);
-		XN_IS_STATUS_OK(nRetVal);
-	#endif
-#elif (CE4100)
-	nRetVal = xnOSStrCopy(strFileName, "/usr/etc/ni/modules.xml", nBufSize);
+	nRetVal = xnGetOpenNIConfFilesPath(strFileName, nBufSize);
 	XN_IS_STATUS_OK(nRetVal);
-#elif (XN_PLATFORM == XN_PLATFORM_LINUX_X86 || XN_PLATFORM == XN_PLATFORM_LINUX_ARM || XN_PLATFORM == XN_PLATFORM_MACOSX)
-	nRetVal = xnOSStrCopy(strFileName, "/var/lib/ni/modules.xml", nBufSize);
+
+	nRetVal = xnOSStrAppend(strFileName, "modules.xml", nBufSize);
 	XN_IS_STATUS_OK(nRetVal);
-#elif XN_PLATFORM_SUPPORTS_DYNAMIC_LIBS
-	#error "Module Loader is not supported on this platform!"
-#endif
 
 	return (XN_STATUS_OK);
 }
@@ -253,6 +241,11 @@ XnStatus XnModuleLoader::LoadAllModules()
 {
 	XnStatus nRetVal = XN_STATUS_OK;
 
+	// first load OpenNI itself
+	nRetVal = AddOpenNIGenerators();
+	XN_IS_STATUS_OK(nRetVal);
+
+	// now load modules
 	TiXmlDocument doc;
 	nRetVal = loadModulesFile(doc);
 	XN_IS_STATUS_OK(nRetVal);
@@ -353,6 +346,19 @@ XnStatus XnModuleLoader::AddModuleGenerators(const XnChar* strModuleFile, XN_LIB
 
 	// add it
 	nRetVal = AddModule(&openNIModule, strConfigDir, strModuleFile);
+	XN_IS_STATUS_OK(nRetVal);
+
+	return XN_STATUS_OK;
+}
+
+XnStatus XnModuleLoader::AddOpenNIGenerators()
+{
+	XnStatus nRetVal = XN_STATUS_OK;
+
+	XnOpenNIModuleInterface* pOpenNIModule = GetOpenNIModuleInterface();
+
+	// add it
+	nRetVal = AddModule(pOpenNIModule, NULL, "OpenNI");
 	XN_IS_STATUS_OK(nRetVal);
 
 	return XN_STATUS_OK;
@@ -551,6 +557,11 @@ XnStatus XnModuleLoader::LoadSpecificInterface(XnVersion& moduleOpenNIVersion, X
 	else if (pHierarchy->IsSet(XN_NODE_TYPE_CODEC))
 	{
 		nRetVal = LoadCodec(moduleOpenNIVersion, pExportedInterface, pInterfaceContainer);
+		XN_IS_STATUS_OK(nRetVal);
+	}
+	else if (pHierarchy->IsSet(XN_NODE_TYPE_SCRIPT))
+	{
+		nRetVal = LoadScriptNode(moduleOpenNIVersion, pExportedInterface, pInterfaceContainer);
 		XN_IS_STATUS_OK(nRetVal);
 	}
 
@@ -911,6 +922,29 @@ XnStatus XnModuleLoader::LoadCodec(XnVersion& moduleOpenNIVersion, XnModuleExpor
 	return (XN_STATUS_OK);
 }
 
+XnStatus XnModuleLoader::LoadScriptNode(XnVersion& moduleOpenNIVersion, XnModuleExportedProductionNodeInterface* pExportedInterface, XnProductionNodeInterfaceContainer*& pInterfaceContainer)
+{
+	XnStatus nRetVal = XN_STATUS_OK;
+
+	XnScriptNodeInterfaceContainer Interface;
+
+	// fill it up
+	pExportedInterface->GetInterface.Script(&Interface.Script);
+
+	// validate interface
+	nRetVal = ValidateScriptNodeInterface(moduleOpenNIVersion, &Interface.Script);
+	XN_IS_STATUS_OK(nRetVal);
+
+	// everything is OK. Allocate and store it
+	XnScriptNodeInterfaceContainer* pContainer;
+	XN_VALIDATE_NEW(pContainer, XnScriptNodeInterfaceContainer);
+	*pContainer = Interface;
+
+	pInterfaceContainer = pContainer;
+
+	return (XN_STATUS_OK);
+}
+
 XnStatus XnModuleLoader::LoadProductionNode(XnVersion& moduleOpenNIVersion, XnModuleExportedProductionNodeInterface* pExportedInterface, XnProductionNodeInterfaceContainer*& pInterfaceContainer)
 {
 	XnStatus nRetVal = XN_STATUS_OK;
@@ -980,7 +1014,7 @@ XnStatus XnModuleLoader::LoadMapGenerator(XnVersion& moduleOpenNIVersion, XnModu
 	return (XN_STATUS_OK);
 }
 
-XnStatus XnModuleLoader::ValidateProductionNodeInterface(XnVersion& moduleOpenNIVersion, XnModuleProductionNodeInterface* pInterface)
+XnStatus XnModuleLoader::ValidateProductionNodeInterface(XnVersion& /*moduleOpenNIVersion*/, XnModuleProductionNodeInterface* pInterface)
 {
 	XN_VALIDATE_FUNC_NOT_NULL(pInterface, IsCapabilitySupported);
 
@@ -1286,8 +1320,22 @@ XnStatus XnModuleLoader::ValidateCodecInterface(XnVersion& moduleOpenNIVersion, 
 	return (XN_STATUS_OK);
 }
 
+XnStatus XnModuleLoader::ValidateScriptNodeInterface(XnVersion& moduleOpenNIVersion, XnModuleScriptNodeInterface* pInterface)
+{
+	XnStatus nRetVal = XN_STATUS_OK;
 
-XnStatus XnModuleLoader::ValidateNodeNotifications(XnVersion& moduleOpenNIVersion, XnNodeNotifications* pNodeNotifications)
+	nRetVal = ValidateProductionNodeInterface(moduleOpenNIVersion, pInterface->pProductionNode);
+	XN_IS_STATUS_OK(nRetVal);
+
+	XN_VALIDATE_FUNC_NOT_NULL(pInterface, GetSupportedFormat);
+	XN_VALIDATE_FUNC_NOT_NULL(pInterface, LoadScriptFromFile);
+	XN_VALIDATE_FUNC_NOT_NULL(pInterface, LoadScriptFromString);
+	XN_VALIDATE_FUNC_NOT_NULL(pInterface, Run);
+
+	return (XN_STATUS_OK);
+}
+
+XnStatus XnModuleLoader::ValidateNodeNotifications(XnVersion& /*moduleOpenNIVersion*/, XnNodeNotifications* pNodeNotifications)
 {
 	XN_VALIDATE_FUNC_NOT_NULL(pNodeNotifications, OnNodeAdded);
 	XN_VALIDATE_FUNC_NOT_NULL(pNodeNotifications, OnNodeRemoved);

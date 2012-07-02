@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -31,6 +31,7 @@
 // Defines
 //---------------------------------------------------------------------------
 #define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
+#define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
 
 //---------------------------------------------------------------------------
 // Macros
@@ -48,14 +49,30 @@
 
 using namespace xn;
 
+XnBool fileExists(const char *fn)
+{
+	XnBool exists;
+	xnOSDoesFileExist(fn, &exists);
+	return exists;
+}
+
 int main()
 {
 	XnStatus nRetVal = XN_STATUS_OK;
 
 	Context context;
+	ScriptNode scriptNode;
 	EnumerationErrors errors;
 
-	nRetVal = context.InitFromXmlFile(SAMPLE_XML_PATH, &errors);
+	const char *fn = NULL;
+	if	(fileExists(SAMPLE_XML_PATH)) fn = SAMPLE_XML_PATH;
+	else if (fileExists(SAMPLE_XML_PATH_LOCAL)) fn = SAMPLE_XML_PATH_LOCAL;
+	else {
+		printf("Could not find '%s' nor '%s'. Aborting.\n" , SAMPLE_XML_PATH, SAMPLE_XML_PATH_LOCAL);
+		return XN_STATUS_ERROR;
+	}
+	printf("Reading config from: '%s'\n", fn);
+	nRetVal = context.InitFromXmlFile(fn, scriptNode, &errors);
 
 	if (nRetVal == XN_STATUS_NO_NODE_PRESENT)
 	{
@@ -97,7 +114,9 @@ int main()
 		printf("Frame %d Middle point is: %u. FPS: %f\n", depthMD.FrameID(), depthMD(depthMD.XRes() / 2, depthMD.YRes() / 2), xnFPSCalc(&xnFPS));
 	}
 
-	context.Shutdown();
+	depth.Release();
+	scriptNode.Release();
+	context.Release();
 
 	return 0;
 }

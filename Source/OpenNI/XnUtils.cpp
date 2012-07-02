@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -458,5 +458,6 @@ XN_C_API XnStatus xnRegisterExtensionNode(const XnChar* strTypeName, XnProductio
 
 XN_C_API XnModuleNodeHandle xnGetModuleNodeHandle(XnNodeHandle hNode)
 {
+	XN_VALIDATE_PTR(hNode, NULL);
 	return hNode->pModuleInstance->hNode;
 }

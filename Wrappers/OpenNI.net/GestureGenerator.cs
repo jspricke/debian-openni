@@ -1,3 +1,24 @@
+/****************************************************************************
+*                                                                           *
+*  OpenNI 1.x Alpha                                                         *
+*  Copyright (C) 2011 PrimeSense Ltd.                                       *
+*                                                                           *
+*  This file is part of OpenNI.                                             *
+*                                                                           *
+*  OpenNI is free software: you can redistribute it and/or modify           *
+*  it under the terms of the GNU Lesser General Public License as published *
+*  by the Free Software Foundation, either version 3 of the License, or     *
+*  (at your option) any later version.                                      *
+*                                                                           *
+*  OpenNI is distributed in the hope that it will be useful,                *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+*  GNU Lesser General Public License for more details.                      *
+*                                                                           *
+*  You should have received a copy of the GNU Lesser General Public License *
+*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
+*                                                                           *
+****************************************************************************/
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -64,6 +85,52 @@ namespace OpenNI
 		private float progress;
 	}
 
+    public class GestureIntermediateStageCompletedEventArgs : EventArgs
+    {
+        public GestureIntermediateStageCompletedEventArgs(string gesture, Point3D position)
+        {
+            this.gesture = gesture;
+            this.position = position;
+        }
+
+        public string Gesture
+        {
+            get { return gesture; }
+            set { gesture = value; }
+        }
+        public Point3D Position
+        {
+            get { return position; }
+            set { position = value; }
+        }
+
+        private string gesture;
+        private Point3D position;
+    }
+
+    public class GestureReadyForNextIntermediateStageEventArgs : EventArgs
+    {
+        public GestureReadyForNextIntermediateStageEventArgs(string gesture, Point3D position)
+        {
+            this.gesture = gesture;
+            this.position = position;
+        }
+
+        public string Gesture
+        {
+            get { return gesture; }
+            set { gesture = value; }
+        }
+        public Point3D Position
+        {
+            get { return position; }
+            set { position = value; }
+        }
+
+        private string gesture;
+        private Point3D position;
+    }
+
     public class GestureGenerator : Generator
     {
 		internal GestureGenerator(Context context, IntPtr nodeHandle, bool addRef)
@@ -75,6 +142,8 @@ namespace OpenNI
 
             this.internalGestureRecognized = new SafeNativeMethods.XnGestureRecognized(this.InternalGestureRecognized);
             this.internalGestureProgress = new SafeNativeMethods.XnGestureProgress(this.InternalGestureProgress);
+            this.internalGestureIntermediateStageCompleted = new SafeNativeMethods.XnGestureIntermediateStageCompleted(this.InternalGestureIntermediateStageCompleted);
+            this.internalGestureReadyForNextIntermediateStage = new SafeNativeMethods.XnGestureReadyForNextIntermediateStage(this.InternalGestureReadyForNextIntermediateStage);
         }
 
         public GestureGenerator(Context context, Query query, EnumerationErrors errors) :
@@ -192,6 +261,15 @@ namespace OpenNI
             return poses;
         }
 
+        public int NumberOfEnumeratedGestures
+        {
+            get
+            {
+                return (Int32)SafeNativeMethods.xnGetNumberOfAvailableGestures(this.InternalObject);
+            }
+            
+        }
+
 		public bool IsGestureAvailable(string gesture)
         {
 			return SafeNativeMethods.xnIsGestureAvailable(InternalObject, gesture);
@@ -280,6 +358,72 @@ namespace OpenNI
         }
         private SafeNativeMethods.XnGestureProgress internalGestureProgress;
         private IntPtr gestureProgressHandle;
+        #endregion
+
+        #region Gesture intermediate stage completed
+        private event EventHandler<GestureIntermediateStageCompletedEventArgs> gestureIntermediateStageCompletedEvent;
+        public event EventHandler<GestureIntermediateStageCompletedEventArgs> GestureIntermediateStageCompleted
+        {
+            add
+            {
+                if (this.gestureIntermediateStageCompletedEvent == null)
+                {
+                    int status = SafeNativeMethods.xnRegisterToGestureIntermediateStageCompleted(this.InternalObject, this.internalGestureIntermediateStageCompleted, IntPtr.Zero, out gestureIntermediateStageCompletedHandle);
+                    WrapperUtils.ThrowOnError(status);
+                }
+                this.gestureIntermediateStageCompletedEvent += value;
+            }
+            remove
+            {
+                this.gestureIntermediateStageCompletedEvent -= value;
+
+                if (this.gestureIntermediateStageCompletedEvent == null)
+                {
+                    SafeNativeMethods.xnUnregisterFromGestureIntermediateStageCompleted(this.InternalObject, this.gestureIntermediateStageCompletedHandle);
+                }
+            }
+        }
+        private void InternalGestureIntermediateStageCompleted(IntPtr hNode, string strGesture, ref Point3D position, IntPtr pCookie)
+        {
+            EventHandler<GestureIntermediateStageCompletedEventArgs> handlers = this.gestureIntermediateStageCompletedEvent;
+            if (handlers != null)
+                handlers(this, new GestureIntermediateStageCompletedEventArgs(strGesture, position));
+        }
+        private SafeNativeMethods.XnGestureIntermediateStageCompleted internalGestureIntermediateStageCompleted;
+        private IntPtr gestureIntermediateStageCompletedHandle;
+        #endregion
+
+        #region Gesture Ready for Next Intermediate Stage
+        private event EventHandler<GestureReadyForNextIntermediateStageEventArgs> gestureReadyForNextIntermediateStageEvent;
+        public event EventHandler<GestureReadyForNextIntermediateStageEventArgs> GestureReadyForNextIntermediateStage
+        {
+            add
+            {
+                if (this.gestureReadyForNextIntermediateStageEvent == null)
+                {
+                    int status = SafeNativeMethods.xnRegisterToGestureReadyForNextIntermediateStage(this.InternalObject, this.internalGestureReadyForNextIntermediateStage, IntPtr.Zero, out gestureReadyForNextIntermediateStageHandle);
+                    WrapperUtils.ThrowOnError(status);
+                }
+                this.gestureReadyForNextIntermediateStageEvent += value;
+            }
+            remove
+            {
+                this.gestureReadyForNextIntermediateStageEvent -= value;
+
+                if (this.gestureReadyForNextIntermediateStageEvent == null)
+                {
+                    SafeNativeMethods.xnUnregisterFromGestureReadyForNextIntermediateStage(this.InternalObject, this.gestureReadyForNextIntermediateStageHandle);
+                }
+            }
+        }
+        private void InternalGestureReadyForNextIntermediateStage(IntPtr hNode, string strGesture, ref Point3D position, IntPtr pCookie)
+        {
+            EventHandler<GestureReadyForNextIntermediateStageEventArgs> handlers = this.gestureReadyForNextIntermediateStageEvent;
+            if (handlers != null)
+                handlers(this, new GestureReadyForNextIntermediateStageEventArgs(strGesture, position));
+        }
+        private SafeNativeMethods.XnGestureReadyForNextIntermediateStage internalGestureReadyForNextIntermediateStage;
+        private IntPtr gestureReadyForNextIntermediateStageHandle;
         #endregion
     }
 }

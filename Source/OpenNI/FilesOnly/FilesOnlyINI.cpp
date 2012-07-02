@@ -1,6 +1,6 @@
 /****************************************************************************
 *                                                                           *
-*  OpenNI 1.1 Alpha                                                         *
+*  OpenNI 1.x Alpha                                                         *
 *  Copyright (C) 2011 PrimeSense Ltd.                                       *
 *                                                                           *
 *  This file is part of OpenNI.                                             *
@@ -56,7 +56,7 @@
 //---------------------------------------------------------------------------
 // Code
 //---------------------------------------------------------------------------
-XnStatus FindEntry(const XnChar* cpINIFile, const XnChar* cpSection, const XnChar* cpKey, XnChar* cpDest)
+static XnStatus FindEntry(const XnChar* cpINIFile, const XnChar* cpSection, const XnChar* cpKey, XnChar* cpDest)
 {
 	XnStatus nRetVal = XN_STATUS_OK;
 	

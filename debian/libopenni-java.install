@@ -1,0 +1,5 @@
+usr/lib/jni/libOpenNI.jni.so
+usr/share/java/org.OpenNI.jar
+usr/share/java/org.OpenNI.Samples.SimpleRead.jar
+usr/share/java/org.OpenNI.Samples.SimpleViewer.jar
+usr/share/java/org.OpenNI.Samples.UserTracker.jar

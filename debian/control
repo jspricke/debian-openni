@@ -17,7 +17,7 @@ Homepage: http://www.openni.org
 Vcs-Git: git://anonscm.debian.org/pkg-multimedia/openni.git
 Vcs-Browser: http://anonscm.debian.org/git/pkg-multimedia/openni.git
 
-Package: libopenni
+Package: libopenni0
 Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
@@ -53,7 +53,7 @@ Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libopenni (= ${binary:Version})
+         libopenni0 (= ${binary:Version})
 Suggests: openni-doc
 Description: headers for OpenNI 'Natural Interaction' frameworks
  OpenNI is a framework for getting data to support 'Natural Interaction',

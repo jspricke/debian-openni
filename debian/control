@@ -20,11 +20,11 @@ Vcs-Git: git://anonscm.debian.org/pkg-multimedia/openni.git
 Vcs-Browser: http://anonscm.debian.org/git/pkg-multimedia/openni.git
 
 Package: libopenni0
-Section: libdevel
+Section: libs
 Architecture: any
 Depends: ${shlibs:Depends},
-         ${misc:Depends},
-         libusb-1.0-0,
+         ${misc:Depends}
+Conflicts: openni-dev
 Description: framework for sensor-based 'Natural Interaction'
  OpenNI is a framework for getting data to support 'Natural Interaction',
  i.e. skeleton tracking, gesture tracking, and similar ways of getting data
@@ -33,11 +33,12 @@ Description: framework for sensor-based 'Natural Interaction'
  framework, which then produce sensory data. OpenNI also allows selection of
  different hardware and middleware modules.
 
+
 Package: openni-utils
-Section: libdevel
+Section: utils
 Architecture: any
 Depends: ${shlibs:Depends},
-         ${misc:Depends},
+         ${misc:Depends}
 Description: debug and test utilities OpenNI framework
  OpenNI is a framework for getting data to support 'Natural Interaction',
  i.e. skeleton tracking, gesture tracking, and similar ways of getting data
@@ -52,8 +53,7 @@ Description: debug and test utilities OpenNI framework
 Package: libopenni-dev
 Section: libdevel
 Architecture: any
-Depends: ${shlibs:Depends},
-         ${misc:Depends},
+Depends: ${misc:Depends},
          libopenni0 (= ${binary:Version})
 Suggests: openni-doc
 Description: headers for OpenNI 'Natural Interaction' frameworks
@@ -67,8 +67,7 @@ Description: headers for OpenNI 'Natural Interaction' frameworks
 Package: openni-doc
 Section: doc
 Architecture: all
-Depends: ${shlibs:Depends},
-         ${misc:Depends}
+Depends: ${misc:Depends}
 Description: developer documentation for OpenNI frameworks
  OpenNI is a framework for getting data to support 'Natural Interaction',
  i.e. skeleton tracking, gesture tracking, and similar ways of getting data

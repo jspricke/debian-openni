@@ -13,7 +13,8 @@ Build-Depends: debhelper (>= 7.0.50~),
                doxygen,
                graphviz,
                libjpeg-dev,
-               libtinyxml-dev
+               libtinyxml-dev,
+               default-jdk
 Standards-Version: 3.9.2
 Homepage: http://www.openni.org
 Vcs-Git: git://anonscm.debian.org/pkg-multimedia/openni.git
@@ -33,6 +34,21 @@ Description: framework for sensor-based 'Natural Interaction'
  framework, which then produce sensory data. OpenNI also allows selection of
  different hardware and middleware modules.
 
+Package: libopenni-java
+Section: java
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         libopenni0 (= ${binary:Version})
+Description: framework for sensor-based 'Natural Interaction'
+ OpenNI is a framework for getting data to support 'Natural Interaction',
+ i.e. skeleton tracking, gesture tracking, and similar ways of getting data
+ from humans. OpenNI provides the interface for physical devices and for
+ middleware components. The API enables modules to be registered in the OpenNI
+ framework, which then produce sensory data. OpenNI also allows selection of
+ different hardware and middleware modules.
+ .
+ This package provides Java bindings for OpenNI.
 
 Package: openni-utils
 Section: utils

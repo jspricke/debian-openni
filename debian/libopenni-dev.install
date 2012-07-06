@@ -1,2 +1,3 @@
 Platform/Linux/Redist/OpenNI-Bin-Dev-Linux-*/Include/* usr/include/ni/
 Platform/Linux/Bin/*-Release/lib*.so usr/lib/
+debian/libopenni.pc usr/lib/pkgconfig

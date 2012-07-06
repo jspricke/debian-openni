@@ -1,0 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/ni
+
+Name: OpenNI
+Description: A general purpose driver for all OpenNI cameras.
+Version: 1.5.2.23
+Requires: libusb-1.0 >= 1.0.4
+Cflags: -I${includedir}
+Libs: -L${libdir} -lOpenNI

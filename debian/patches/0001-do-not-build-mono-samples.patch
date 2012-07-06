@@ -1,10 +1,15 @@
-Description: Comment out mono-related stuff
-Author: Hans-Christoph Steiner <hans@eds.org>
-Forwarded: not-needed
-Last-Update: <2012-01-18>
+From: Hans-Christoph Steiner <hans@eds.org>
+Date: Wed, 4 Jul 2012 17:36:07 +0200
+Subject: do-not-build-mono-samples
 
---- openni-1.5.2.23.orig/Platform/Linux/Build/Makefile
-+++ openni-1.5.2.23/Platform/Linux/Build/Makefile
+---
+ Platform/Linux/Build/Makefile |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/Platform/Linux/Build/Makefile b/Platform/Linux/Build/Makefile
+index 51dc234..8da2f11 100644
+--- a/Platform/Linux/Build/Makefile
++++ b/Platform/Linux/Build/Makefile
 @@ -26,8 +26,8 @@ ALL_UTILS = \
  	Utils/niReg \
  	Utils/niLicense

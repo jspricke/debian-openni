@@ -2,3 +2,4 @@
 0002-Add-SONAME-to-libraries.patch
 0003-Change-path-of-config-files-to-etc-openni.patch
 0004-Disable-SSE.patch
+0005-Silence-asserts.patch

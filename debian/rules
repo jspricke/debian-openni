@@ -1,54 +1,43 @@
 #!/usr/bin/make -f
 
-DEST = $(CURDIR)/debian/tmp
-COMPILED_BASE = $(CURDIR)/Platform/Linux-x86/
-COMPILED_BIN = $(COMPILED_BASE)/Bin/Release
-COMPILED_LIB = $(COMPILED_BASE)/Redist/Include
-
-prefix = /usr
-bindir = $(prefix)/bin
-libdir = $(prefix)/lib
-includedir = $(prefix)/include
-docdir = $(prefix)/share/doc
-
 %:
 	dh $@ --buildsystem=makefile
 
 override_dh_auto_build:
-	cd Platform/Linux-x86/CreateRedist && LDFLAGS=-lGL ./RedistMaker
-
-override_dh_auto_install:
-	install -d $(DEST)/$(bindir)
-	install -p $(COMPILED_BIN)/niLicense \
-		$(COMPILED_BIN)/niReg \
-		$(DEST)/$(bindir)
-	install -d $(DEST)/$(libdir)
-	install -p $(COMPILED_BIN)/libnimMockNodes.so \
-		$(COMPILED_BIN)/libnimCodecs.so \
-		$(COMPILED_BIN)/libnimRecorder.so \
-		$(COMPILED_BIN)/libOpenNI.so \
-		$(DEST)/$(libdir)
-	install -d $(DEST)/$(includedir)/ni
-	install -p $(COMPILED_LIB)/*.h \
-		$(DEST)/$(includedir)/ni
-# Makefiles needed by (at least) PrimeSense Sensor
-	install -p $(COMPILED_LIB)/*Makefile \
-		$(DEST)/$(includedir)/ni
-	install -d $(DEST)/$(includedir)/ni/Linux-Arm
-	install -p $(COMPILED_LIB)/Linux-Arm/*.h \
-		$(DEST)/$(includedir)/ni/Linux-Arm
-	install -d $(DEST)/$(includedir)/ni/Linux-x86
-	install -p $(COMPILED_LIB)/Linux-x86/*.h \
-		$(DEST)/$(includedir)/ni/Linux-x86
-	install -d $(DEST)/$(docdir)/$(PACKAGE)/html
-	install -p $(CURDIR)/Documentation/OpenNI_UserGuide.pdf \
-		$(DEST)/$(docdir)/$(PACKAGE)/
-	install -p $(CURDIR)/Source/DoxyGen/html/*.* \
-		$(DEST)/$(docdir)/$(PACKAGE)/html
-	install -d $(DEST)/var/lib/ni
-	install -d $(DEST)/etc/primesense
+	cd Platform/Linux/CreateRedist && LDFLAGS=-lGL ./RedistMaker
 
 override_dh_auto_clean:
 	dh_auto_clean
-	rm -rf -- $(COMPILED_BASE)/CreateRedist/Final
-	rm -rf -- $(COMPILED_BASE)/CreateRedist/Output
+	rm -rf -- Source/DoxyGen/html/
+	rm -rf -- Platform/Linux/Bin/
+	rm -rf -- Platform/Linux/Build/Modules/nimCodecs/x64-Release/
+	rm -rf -- Platform/Linux/Build/Modules/nimMockNodes/x64-Release/
+	rm -rf -- Platform/Linux/Build/Modules/nimRecorder/x64-Release/
+	rm -rf -- Platform/Linux/Build/OpenNI/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiAudioSample/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiBackRecorder/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiCRead/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiConvertXToONI/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiHandTracker/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiRecordSynthetic/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSampleModule/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleCreate/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleRead/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleSkeleton/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleViewer/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiUserSelection/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiUserTracker/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiViewer/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/SimpleRead.java/Manifest.txt
+	rm -rf -- Platform/Linux/Build/Samples/SimpleRead.java/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/SimpleViewer.java/Manifest.txt
+	rm -rf -- Platform/Linux/Build/Samples/SimpleViewer.java/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/UserTracker.java/Manifest.txt
+	rm -rf -- Platform/Linux/Build/Samples/UserTracker.java/x64-Release/
+	rm -rf -- Platform/Linux/Build/Utils/niLicense/x64-Release/
+	rm -rf -- Platform/Linux/Build/Utils/niReg/x64-Release/
+	rm -rf -- Platform/Linux/Build/Wrappers/OpenNI.java/x64-Release/
+	rm -rf -- Platform/Linux/Build/Wrappers/OpenNI.jni/x64-Release/
+	rm -rf -- Platform/Linux/CreateRedist/Final/
+	rm -rf -- Platform/Linux/CreateRedist/Output/
+	rm -rf -- Platform/Linux/Redist/

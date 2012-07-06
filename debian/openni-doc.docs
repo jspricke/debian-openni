@@ -1,2 +1,2 @@
-debian/tmp/usr/share/doc/html/
-debian/tmp/usr/share/doc/*pdf
+Platform/Linux/Redist/OpenNI-Bin-Dev-Linux-*/Documentation/html/
+Documentation/OpenNI_UserGuide.pdf

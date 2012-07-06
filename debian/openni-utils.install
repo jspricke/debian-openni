@@ -1,1 +1,4 @@
-usr/bin/*
+Platform/Linux/Bin/*-Release/NiViewer usr/bin/
+Platform/Linux/Bin/*-Release/Sample-* usr/bin/
+Platform/Linux/Bin/*-Release/niReg usr/bin/
+Platform/Linux/Bin/*-Release/niLicense usr/bin/

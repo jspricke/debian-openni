@@ -1,1 +1,1 @@
-usr/lib/*so
+Platform/Linux/Bin/*-Release/lib*.so.* usr/lib/

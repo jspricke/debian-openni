@@ -4,3 +4,4 @@
 0004-Disable-SSE.patch
 0005-Silence-asserts.patch
 0006-Link-against-libGL.patch
+0007-Use-system-wide-libjpeg.patch

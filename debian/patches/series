@@ -5,3 +5,4 @@
 0005-Silence-asserts.patch
 0006-Link-against-libGL.patch
 0007-Use-system-wide-libjpeg.patch
+0008-Use-system-wide-tinyxml.patch

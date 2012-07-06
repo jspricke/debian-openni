@@ -23,7 +23,6 @@ Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          libusb-1.0-0,
-         openni-utils
 Description: framework for sensor-based 'Natural Interaction'
  OpenNI is a framework for getting data to support 'Natural Interaction',
  i.e. skeleton tracking, gesture tracking, and similar ways of getting data

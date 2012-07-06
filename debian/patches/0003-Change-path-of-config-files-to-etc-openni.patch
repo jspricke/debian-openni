@@ -1,0 +1,175 @@
+From: Jochen Sprickerhof <jochen@sprickerhof.de>
+Date: Wed, 4 Jul 2012 17:40:33 +0200
+Subject: Change path of config files to /etc/openni
+
+---
+ Samples/NiAudioSample/NiAudioSample.cpp         |    2 +-
+ Samples/NiCRead/NiCRead.c                       |    2 +-
+ Samples/NiHandTracker/main.cpp                  |    2 +-
+ Samples/NiRecordRaw/NiRecordRaw.cpp             |    2 +-
+ Samples/NiRecordSynthetic/NiRecordSynthetic.cpp |    2 +-
+ Samples/NiSimpleRead/NiSimpleRead.cpp           |    2 +-
+ Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp   |    2 +-
+ Samples/NiSimpleViewer/NiSimpleViewer.cpp       |    2 +-
+ Samples/NiUserSelection/UserTracker.cpp         |    2 +-
+ Samples/NiUserTracker/main.cpp                  |    2 +-
+ Samples/NiViewer/NiViewer.cpp                   |    2 +-
+ Source/OpenNI/XnOpenNI.cpp                      |    2 +-
+ 12 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/Samples/NiAudioSample/NiAudioSample.cpp b/Samples/NiAudioSample/NiAudioSample.cpp
+index 2205b96..5e5213b 100644
+--- a/Samples/NiAudioSample/NiAudioSample.cpp
++++ b/Samples/NiAudioSample/NiAudioSample.cpp
+@@ -31,7 +31,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ #define NUMBER_OF_AUDIO_BUFFERS 100
+ 
+diff --git a/Samples/NiCRead/NiCRead.c b/Samples/NiCRead/NiCRead.c
+index 89051ed..9967b10 100644
+--- a/Samples/NiCRead/NiCRead.c
++++ b/Samples/NiCRead/NiCRead.c
+@@ -27,7 +27,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ //---------------------------------------------------------------------------
+ // Macros
+diff --git a/Samples/NiHandTracker/main.cpp b/Samples/NiHandTracker/main.cpp
+index d5ca19e..f80a8e6 100644
+--- a/Samples/NiHandTracker/main.cpp
++++ b/Samples/NiHandTracker/main.cpp
+@@ -28,7 +28,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ 
+ //---------------------------------------------------------------------------
+diff --git a/Samples/NiRecordRaw/NiRecordRaw.cpp b/Samples/NiRecordRaw/NiRecordRaw.cpp
+index bfa1a80..00a7713 100644
+--- a/Samples/NiRecordRaw/NiRecordRaw.cpp
++++ b/Samples/NiRecordRaw/NiRecordRaw.cpp
+@@ -30,7 +30,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ #define RECORDING_FILE_NAME "recordingWithRaw.oni"
+ #define RAW_NODE_NAME "Raw1"
+ 
+diff --git a/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp b/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp
+index 93579d3..f4caa2a 100644
+--- a/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp
++++ b/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp
+@@ -30,7 +30,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ //---------------------------------------------------------------------------
+ // Macros
+diff --git a/Samples/NiSimpleRead/NiSimpleRead.cpp b/Samples/NiSimpleRead/NiSimpleRead.cpp
+index 44351a7..dd9e57b 100644
+--- a/Samples/NiSimpleRead/NiSimpleRead.cpp
++++ b/Samples/NiSimpleRead/NiSimpleRead.cpp
+@@ -30,7 +30,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ #define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
+ 
+ //---------------------------------------------------------------------------
+diff --git a/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp b/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp
+index 2b8ee3c..21aeb10 100644
+--- a/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp
++++ b/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp
+@@ -27,7 +27,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ #define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
+ 
+ //---------------------------------------------------------------------------
+diff --git a/Samples/NiSimpleViewer/NiSimpleViewer.cpp b/Samples/NiSimpleViewer/NiSimpleViewer.cpp
+index 583cb9e..df98cdc 100644
+--- a/Samples/NiSimpleViewer/NiSimpleViewer.cpp
++++ b/Samples/NiSimpleViewer/NiSimpleViewer.cpp
+@@ -36,7 +36,7 @@ using namespace xn;
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ #define GL_WIN_SIZE_X 1280
+ #define GL_WIN_SIZE_Y 1024
+diff --git a/Samples/NiUserSelection/UserTracker.cpp b/Samples/NiUserSelection/UserTracker.cpp
+index b22e17b..3bf5c8f 100644
+--- a/Samples/NiUserSelection/UserTracker.cpp
++++ b/Samples/NiUserSelection/UserTracker.cpp
+@@ -31,7 +31,7 @@
+ // the filename for saving/loading calibration.
+ #define XN_CALIBRATION_FILE_NAME "UserCalibration.bin"
+ 
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ 
+ float *UserTracker::s_pDepthHist=NULL;
+diff --git a/Samples/NiUserTracker/main.cpp b/Samples/NiUserTracker/main.cpp
+index 491d140..c27cb7d 100644
+--- a/Samples/NiUserTracker/main.cpp
++++ b/Samples/NiUserTracker/main.cpp
+@@ -304,7 +304,7 @@ void glInit (int * pargc, char ** argv)
+ }
+ #endif // USE_GLES
+ 
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ #define CHECK_RC(nRetVal, what)										\
+ 	if (nRetVal != XN_STATUS_OK)									\
+diff --git a/Samples/NiViewer/NiViewer.cpp b/Samples/NiViewer/NiViewer.cpp
+index 3e3e342..41d0f1a 100644
+--- a/Samples/NiViewer/NiViewer.cpp
++++ b/Samples/NiViewer/NiViewer.cpp
+@@ -84,7 +84,7 @@ using namespace glh;
+ // --------------------------------
+ // Defines
+ // --------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ 
+ // --------------------------------
+ // Types
+diff --git a/Source/OpenNI/XnOpenNI.cpp b/Source/OpenNI/XnOpenNI.cpp
+index 9600580..1678dc2 100644
+--- a/Source/OpenNI/XnOpenNI.cpp
++++ b/Source/OpenNI/XnOpenNI.cpp
+@@ -6993,7 +6993,7 @@ XN_C_API XnStatus xnScriptNodeRun(XnNodeHandle hScript, XnEnumerationErrors* pEr
+ #elif (CE4100)
+ 	#define XN_OPEN_NI_FILES_LOCATION "/usr/etc/ni/"
+ #elif (XN_PLATFORM == XN_PLATFORM_LINUX_X86 || XN_PLATFORM == XN_PLATFORM_LINUX_ARM || XN_PLATFORM == XN_PLATFORM_MACOSX)
+-	#define XN_OPEN_NI_FILES_LOCATION "/var/lib/ni/"
++	#define XN_OPEN_NI_FILES_LOCATION "/etc/openni/"
+ #elif (XN_PLATFORM == XN_PLATFORM_ANDROID_ARM)
+ 	#define XN_OPEN_NI_FILES_LOCATION "/data/ni/"
+ #else

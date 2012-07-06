@@ -1,0 +1,5 @@
+<Modules>
+    <Module path="/usr/lib/libnimMockNodes.so.0" configDir="/etc/openni" />
+    <Module path="/usr/lib/libnimCodecs.so.0" configDir="/etc/openni" />
+    <Module path="/usr/lib/libnimRecorder.so.0" configDir="/etc/openni" />
+</Modules>

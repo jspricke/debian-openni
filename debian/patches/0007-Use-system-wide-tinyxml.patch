@@ -7,7 +7,7 @@ Subject: Use system wide tinyxml
  1 file changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/Platform/Linux/Build/OpenNI/Makefile b/Platform/Linux/Build/OpenNI/Makefile
-index 2f99e3c..8c0a74d 100644
+index c4645f5..8c0a74d 100644
 --- a/Platform/Linux/Build/OpenNI/Makefile
 +++ b/Platform/Linux/Build/OpenNI/Makefile
 @@ -4,13 +4,11 @@ BIN_DIR = ../../Bin
@@ -15,13 +15,13 @@ index 2f99e3c..8c0a74d 100644
  INC_DIRS = \
  	../../../../Include \
 -	../../../../Source \
--	../../../../Source/External/TinyXml
+-	../../../../Externals/TinyXml
 +	../../../../Source
  
  SRC_FILES = \
  	../../../../Source/OpenNI/*.cpp \
 -	../../../../Source/OpenNI/Linux/*.cpp \
--	../../../../Source/External/TinyXml/*.cpp
+-	../../../../Externals/TinyXml/*.cpp
 +	../../../../Source/OpenNI/Linux/*.cpp
  
  ifeq ("$(OSTYPE)","Darwin")

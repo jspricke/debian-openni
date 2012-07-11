@@ -7,7 +7,7 @@ Subject: Use system wide libjpeg
  1 file changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/Platform/Linux/Build/Modules/nimCodecs/Makefile b/Platform/Linux/Build/Modules/nimCodecs/Makefile
-index 600e371..9d69531 100644
+index 1089d96..9d69531 100644
 --- a/Platform/Linux/Build/Modules/nimCodecs/Makefile
 +++ b/Platform/Linux/Build/Modules/nimCodecs/Makefile
 @@ -2,16 +2,21 @@ BIN_DIR = ../../../Bin
@@ -15,12 +15,12 @@ index 600e371..9d69531 100644
  INC_DIRS = \
  	../../../../../Include \
 -	../../../../../Source \
--	../../../../../Source/External/LibJPEG
+-	../../../../../Externals/LibJPEG
 +	../../../../../Source
  
  SRC_FILES = \
 -	../../../../../Source/Modules/nimCodecs/*.cpp \
--	../../../../../Source/External/LibJPEG/*.c
+-	../../../../../Externals/LibJPEG/*.c
 +	../../../../../Source/Modules/nimCodecs/*.cpp
  
  LIB_NAME = nimCodecs

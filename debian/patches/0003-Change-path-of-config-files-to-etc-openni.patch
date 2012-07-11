@@ -3,25 +3,26 @@ Date: Wed, 4 Jul 2012 17:40:33 +0200
 Subject: Change path of config files to /etc/openni
 
 ---
- Samples/NiAudioSample/NiAudioSample.cpp         |    2 +-
- Samples/NiCRead/NiCRead.c                       |    2 +-
- Samples/NiHandTracker/main.cpp                  |    2 +-
- Samples/NiRecordRaw/NiRecordRaw.cpp             |    2 +-
- Samples/NiRecordSynthetic/NiRecordSynthetic.cpp |    2 +-
- Samples/NiSimpleRead/NiSimpleRead.cpp           |    2 +-
- Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp   |    2 +-
- Samples/NiSimpleViewer/NiSimpleViewer.cpp       |    2 +-
- Samples/NiUserSelection/UserTracker.cpp         |    2 +-
- Samples/NiUserTracker/main.cpp                  |    2 +-
- Samples/NiViewer/NiViewer.cpp                   |    2 +-
- Source/OpenNI/XnOpenNI.cpp                      |    2 +-
- 12 files changed, 12 insertions(+), 12 deletions(-)
+ Samples/NiAudioSample/NiAudioSample.cpp             |    2 +-
+ Samples/NiCRead/NiCRead.c                           |    2 +-
+ Samples/NiHandTracker/main.cpp                      |    4 ++--
+ Samples/NiRecordRaw/NiRecordRaw.cpp                 |    2 +-
+ Samples/NiRecordSynthetic/NiRecordSynthetic.cpp     |    2 +-
+ Samples/NiSimpleRead/NiSimpleRead.cpp               |    2 +-
+ Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp       |    2 +-
+ Samples/NiSimpleViewer/NiSimpleViewer.cpp           |    2 +-
+ Samples/NiSkeletonBenchmark/NiSkeletonBenchmark.cpp |    2 +-
+ Samples/NiUserSelection/UserTracker.cpp             |    2 +-
+ Samples/NiUserTracker/main.cpp                      |    2 +-
+ Samples/NiViewer/NiViewer.cpp                       |    2 +-
+ Source/OpenNI/XnOpenNI.cpp                          |    4 ++--
+ 13 files changed, 15 insertions(+), 15 deletions(-)
 
 diff --git a/Samples/NiAudioSample/NiAudioSample.cpp b/Samples/NiAudioSample/NiAudioSample.cpp
-index 2205b96..5e5213b 100644
+index a7acdf3..b57463b 100644
 --- a/Samples/NiAudioSample/NiAudioSample.cpp
 +++ b/Samples/NiAudioSample/NiAudioSample.cpp
-@@ -31,7 +31,7 @@
+@@ -33,7 +33,7 @@
  //---------------------------------------------------------------------------
  // Defines
  //---------------------------------------------------------------------------
@@ -31,7 +32,7 @@ index 2205b96..5e5213b 100644
  #define NUMBER_OF_AUDIO_BUFFERS 100
  
 diff --git a/Samples/NiCRead/NiCRead.c b/Samples/NiCRead/NiCRead.c
-index 89051ed..9967b10 100644
+index 8fe3584..bba0ab6 100644
 --- a/Samples/NiCRead/NiCRead.c
 +++ b/Samples/NiCRead/NiCRead.c
 @@ -27,7 +27,7 @@
@@ -40,11 +41,11 @@ index 89051ed..9967b10 100644
  //---------------------------------------------------------------------------
 -#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
 +#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ #define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
  
  //---------------------------------------------------------------------------
- // Macros
 diff --git a/Samples/NiHandTracker/main.cpp b/Samples/NiHandTracker/main.cpp
-index d5ca19e..f80a8e6 100644
+index d5ca19e..de2f769 100644
 --- a/Samples/NiHandTracker/main.cpp
 +++ b/Samples/NiHandTracker/main.cpp
 @@ -28,7 +28,7 @@
@@ -56,8 +57,15 @@ index d5ca19e..f80a8e6 100644
  
  
  //---------------------------------------------------------------------------
+@@ -75,4 +75,4 @@ int main(int argc, char* argv[])
+ 	}
+ 
+ 	return 0;
+-}
+\ No newline at end of file
++}
 diff --git a/Samples/NiRecordRaw/NiRecordRaw.cpp b/Samples/NiRecordRaw/NiRecordRaw.cpp
-index bfa1a80..00a7713 100644
+index ec7b61b..d11d8c7 100644
 --- a/Samples/NiRecordRaw/NiRecordRaw.cpp
 +++ b/Samples/NiRecordRaw/NiRecordRaw.cpp
 @@ -30,7 +30,7 @@
@@ -70,7 +78,7 @@ index bfa1a80..00a7713 100644
  #define RAW_NODE_NAME "Raw1"
  
 diff --git a/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp b/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp
-index 93579d3..f4caa2a 100644
+index 93579d3..fa910b3 100644
 --- a/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp
 +++ b/Samples/NiRecordSynthetic/NiRecordSynthetic.cpp
 @@ -30,7 +30,7 @@
@@ -83,7 +91,7 @@ index 93579d3..f4caa2a 100644
  //---------------------------------------------------------------------------
  // Macros
 diff --git a/Samples/NiSimpleRead/NiSimpleRead.cpp b/Samples/NiSimpleRead/NiSimpleRead.cpp
-index 44351a7..dd9e57b 100644
+index 37aed52..745b8f4 100644
 --- a/Samples/NiSimpleRead/NiSimpleRead.cpp
 +++ b/Samples/NiSimpleRead/NiSimpleRead.cpp
 @@ -30,7 +30,7 @@
@@ -96,7 +104,7 @@ index 44351a7..dd9e57b 100644
  
  //---------------------------------------------------------------------------
 diff --git a/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp b/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp
-index 2b8ee3c..21aeb10 100644
+index 443058a..f2093c7 100644
 --- a/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp
 +++ b/Samples/NiSimpleSkeleton/NiSimpleSkeleton.cpp
 @@ -27,7 +27,7 @@
@@ -109,7 +117,7 @@ index 2b8ee3c..21aeb10 100644
  
  //---------------------------------------------------------------------------
 diff --git a/Samples/NiSimpleViewer/NiSimpleViewer.cpp b/Samples/NiSimpleViewer/NiSimpleViewer.cpp
-index 583cb9e..df98cdc 100644
+index dffb1c7..8f58195 100644
 --- a/Samples/NiSimpleViewer/NiSimpleViewer.cpp
 +++ b/Samples/NiSimpleViewer/NiSimpleViewer.cpp
 @@ -36,7 +36,7 @@ using namespace xn;
@@ -121,11 +129,24 @@ index 583cb9e..df98cdc 100644
  
  #define GL_WIN_SIZE_X 1280
  #define GL_WIN_SIZE_Y 1024
+diff --git a/Samples/NiSkeletonBenchmark/NiSkeletonBenchmark.cpp b/Samples/NiSkeletonBenchmark/NiSkeletonBenchmark.cpp
+index 9159875..66a8cc2 100644
+--- a/Samples/NiSkeletonBenchmark/NiSkeletonBenchmark.cpp
++++ b/Samples/NiSkeletonBenchmark/NiSkeletonBenchmark.cpp
+@@ -29,7 +29,7 @@
+ //---------------------------------------------------------------------------
+ // Defines
+ //---------------------------------------------------------------------------
+-#define SAMPLE_XML_PATH "../../../../Data/SamplesConfig.xml"
++#define SAMPLE_XML_PATH "/etc/openni/SamplesConfig.xml"
+ #define SAMPLE_XML_PATH_LOCAL "SamplesConfig.xml"
+ //printf tweaks
+ #define BRIGHT 1
 diff --git a/Samples/NiUserSelection/UserTracker.cpp b/Samples/NiUserSelection/UserTracker.cpp
-index b22e17b..3bf5c8f 100644
+index 41983d0..e29d4b5 100644
 --- a/Samples/NiUserSelection/UserTracker.cpp
 +++ b/Samples/NiUserSelection/UserTracker.cpp
-@@ -31,7 +31,7 @@
+@@ -28,7 +28,7 @@
  // the filename for saving/loading calibration.
  #define XN_CALIBRATION_FILE_NAME "UserCalibration.bin"
  
@@ -135,10 +156,10 @@ index b22e17b..3bf5c8f 100644
  
  float *UserTracker::s_pDepthHist=NULL;
 diff --git a/Samples/NiUserTracker/main.cpp b/Samples/NiUserTracker/main.cpp
-index 491d140..c27cb7d 100644
+index ea1c4e2..2da08b3 100644
 --- a/Samples/NiUserTracker/main.cpp
 +++ b/Samples/NiUserTracker/main.cpp
-@@ -304,7 +304,7 @@ void glInit (int * pargc, char ** argv)
+@@ -315,7 +315,7 @@ void glInit (int * pargc, char ** argv)
  }
  #endif // USE_GLES
  
@@ -148,10 +169,10 @@ index 491d140..c27cb7d 100644
  #define CHECK_RC(nRetVal, what)										\
  	if (nRetVal != XN_STATUS_OK)									\
 diff --git a/Samples/NiViewer/NiViewer.cpp b/Samples/NiViewer/NiViewer.cpp
-index 3e3e342..41d0f1a 100644
+index 9e9d8f4..72f5dfb 100644
 --- a/Samples/NiViewer/NiViewer.cpp
 +++ b/Samples/NiViewer/NiViewer.cpp
-@@ -84,7 +84,7 @@ using namespace glh;
+@@ -86,7 +86,7 @@ using namespace glh;
  // --------------------------------
  // Defines
  // --------------------------------
@@ -161,12 +182,15 @@ index 3e3e342..41d0f1a 100644
  // --------------------------------
  // Types
 diff --git a/Source/OpenNI/XnOpenNI.cpp b/Source/OpenNI/XnOpenNI.cpp
-index 9600580..1678dc2 100644
+index 7bf268a..3ecb895 100644
 --- a/Source/OpenNI/XnOpenNI.cpp
 +++ b/Source/OpenNI/XnOpenNI.cpp
-@@ -6993,7 +6993,7 @@ XN_C_API XnStatus xnScriptNodeRun(XnNodeHandle hScript, XnEnumerationErrors* pEr
+@@ -7061,9 +7061,9 @@ XN_C_API XnStatus xnScriptNodeRun(XnNodeHandle hScript, XnEnumerationErrors* pEr
+ #if (XN_PLATFORM == XN_PLATFORM_WIN32)
+ 	#define XN_OPEN_NI_FILES_LOCATION "\\Data\\"
  #elif (CE4100)
- 	#define XN_OPEN_NI_FILES_LOCATION "/usr/etc/ni/"
+-	#define XN_OPEN_NI_FILES_LOCATION "/usr/etc/ni/"
++	#define XN_OPEN_NI_FILES_LOCATION "/etc/openni/"
  #elif (XN_PLATFORM == XN_PLATFORM_LINUX_X86 || XN_PLATFORM == XN_PLATFORM_LINUX_ARM || XN_PLATFORM == XN_PLATFORM_MACOSX)
 -	#define XN_OPEN_NI_FILES_LOCATION "/var/lib/ni/"
 +	#define XN_OPEN_NI_FILES_LOCATION "/etc/openni/"

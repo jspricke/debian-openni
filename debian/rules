@@ -10,34 +10,34 @@ override_dh_auto_clean:
 	dh_auto_clean
 	rm -rf -- Source/DoxyGen/html/
 	rm -rf -- Platform/Linux/Bin/
-	rm -rf -- Platform/Linux/Build/Modules/nimCodecs/x64-Release/
-	rm -rf -- Platform/Linux/Build/Modules/nimMockNodes/x64-Release/
-	rm -rf -- Platform/Linux/Build/Modules/nimRecorder/x64-Release/
-	rm -rf -- Platform/Linux/Build/OpenNI/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiAudioSample/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiBackRecorder/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiCRead/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiConvertXToONI/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiHandTracker/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiRecordSynthetic/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiSampleModule/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiSimpleCreate/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiSimpleRead/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiSimpleSkeleton/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiSimpleViewer/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiUserSelection/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiUserTracker/x64-Release/
-	rm -rf -- Platform/Linux/Build/Samples/NiViewer/x64-Release/
+	rm -rf -- Platform/Linux/Build/Modules/nimCodecs/*-Release/
+	rm -rf -- Platform/Linux/Build/Modules/nimMockNodes/*-Release/
+	rm -rf -- Platform/Linux/Build/Modules/nimRecorder/*-Release/
+	rm -rf -- Platform/Linux/Build/OpenNI/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiAudioSample/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiBackRecorder/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiCRead/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiConvertXToONI/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiHandTracker/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiRecordSynthetic/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSampleModule/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleCreate/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleRead/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleSkeleton/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiSimpleViewer/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiUserSelection/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiUserTracker/*-Release/
+	rm -rf -- Platform/Linux/Build/Samples/NiViewer/*-Release/
 	rm -rf -- Platform/Linux/Build/Samples/SimpleRead.java/Manifest.txt
-	rm -rf -- Platform/Linux/Build/Samples/SimpleRead.java/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/SimpleRead.java/*-Release/
 	rm -rf -- Platform/Linux/Build/Samples/SimpleViewer.java/Manifest.txt
-	rm -rf -- Platform/Linux/Build/Samples/SimpleViewer.java/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/SimpleViewer.java/*-Release/
 	rm -rf -- Platform/Linux/Build/Samples/UserTracker.java/Manifest.txt
-	rm -rf -- Platform/Linux/Build/Samples/UserTracker.java/x64-Release/
-	rm -rf -- Platform/Linux/Build/Utils/niLicense/x64-Release/
-	rm -rf -- Platform/Linux/Build/Utils/niReg/x64-Release/
-	rm -rf -- Platform/Linux/Build/Wrappers/OpenNI.java/x64-Release/
-	rm -rf -- Platform/Linux/Build/Wrappers/OpenNI.jni/x64-Release/
+	rm -rf -- Platform/Linux/Build/Samples/UserTracker.java/*-Release/
+	rm -rf -- Platform/Linux/Build/Utils/niLicense/*-Release/
+	rm -rf -- Platform/Linux/Build/Utils/niReg/*-Release/
+	rm -rf -- Platform/Linux/Build/Wrappers/OpenNI.java/*-Release/
+	rm -rf -- Platform/Linux/Build/Wrappers/OpenNI.jni/*-Release/
 	rm -rf -- Platform/Linux/CreateRedist/Final/
 	rm -rf -- Platform/Linux/CreateRedist/Output/
 	rm -rf -- Platform/Linux/Redist/

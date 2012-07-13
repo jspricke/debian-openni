@@ -4,7 +4,7 @@
 	dh $@ --buildsystem=makefile
 
 override_dh_auto_build:
-	cd Platform/Linux/CreateRedist && sh RedistMaker
+	cd Platform/Linux/CreateRedist && ./RedistMaker
 
 override_dh_auto_clean:
 	dh_auto_clean

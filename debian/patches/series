@@ -5,3 +5,4 @@
 0005-Silence-asserts.patch
 0006-Use-system-wide-libjpeg.patch
 0007-Use-system-wide-tinyxml.patch
+0008-Fix-preprocessor-macro-to-be-C-11-compatible.patch

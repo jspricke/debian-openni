@@ -1,5 +1,11 @@
-openni (1.5.4.0-1) UNRELEASED; urgency=low
+openni (1.5.4.0-1) unstable; urgency=low
 
+  [ Hans-Christoph Steiner ]
   * Initial release (Closes: #607160)
 
- -- Hans-Christoph Steiner <hans@eds.org>  Wed, 10 Nov 2010 15:40:08 -0500
+  [ Jochen Sprickerhof ]
+  * Fix clean target in rules to work cross platform.
+  * Fix rules
+  * Add patch to fix preprocessor symbol with C++11
+
+ -- Jochen Sprickerhof <launchpad@jochen.sprickerhof.de>  Thu, 20 Dec 2012 21:42:59 +0100

@@ -6,3 +6,5 @@
 0006-Use-system-wide-libjpeg.patch
 0007-Use-system-wide-tinyxml.patch
 0008-Fix-preprocessor-macro-to-be-C-11-compatible.patch
+0009-Remove-superfluous-printf.patch
+0010-Including-call-to-libusb_detach_kernel_driver-to-det.patch

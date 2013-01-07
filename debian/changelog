@@ -1,3 +1,10 @@
+openni (1.5.4.0-5) unstable; urgency=low
+
+  * Fix USB code and printf
+  * Adapt to libopenni-sensor-primesense SONAME bump
+
+ -- Jochen Sprickerhof <launchpad@jochen.sprickerhof.de>  Tue, 08 Jan 2013 00:40:17 +0100
+
 openni (1.5.4.0-4) unstable; urgency=low
 
   * Simplify pkg-config file
